@@ -1,0 +1,52 @@
+# Gradle files
+.gradle/
+build/
+
+# Local configuration file
+local.properties
+
+# Android Studio
+.idea/
+*.iml
+.navigation/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Built application files
+*.apk
+*.ap_
+*.aab
+*.zip
+
+# Java class files
+*.class
+
+# Generated files
+bin/
+gen/
+out/
+
+# Gradle wrapper jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# Log files
+*.log
+
+# Android Studio profiler
+*.hprof
+
+# Signing files
+*.jks
+*.keystore
+
+# Version control
+.svn/
+
+# Project-specific
+app/build/
+.claude/
