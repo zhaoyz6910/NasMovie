@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 主色调（深色模式） -->
+    <color name="colorPrimary">#90CAF9</color>
+    <color name="colorPrimaryDark">#42A5F5</color>
+    <color name="colorAccent">#90CAF9</color>
+
+    <!-- 背景色 -->
+    <color name="colorBackground">#121212</color>
+    <color name="colorSurface">#1E1E1E</color>
+
+    <!-- 文字颜色 -->
+    <color name="textPrimary">#FFFFFF</color>
+    <color name="textSecondary">#B0B0B0</color>
+    <color name="textHint">#757575</color>
+
+    <!-- 其他 -->
+    <color name="divider">#333333</color>
+    <color name="ratingBackground">#1976D2</color>
+    <color name="progressBackground">#33FFFFFF</color>
+
+    <!-- 播放器 -->
+    <color name="playerControlBackground">#80000000</color>
+    <color name="playerProgress">#FF8A65</color>
+    <color name="playerBuffered">#33FFFFFF</color>
+</resources>

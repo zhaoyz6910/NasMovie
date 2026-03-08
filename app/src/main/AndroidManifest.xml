@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- 网络权限 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <!-- 存储权限 -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
+    <!-- 唤醒锁权限（视频播放） -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- 前台服务权限（扫描服务） -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <!-- 通知权限（Android 13+） -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application
+        android:name=".NASMovieApp"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.NASMovie"
+        android:usesCleartextTraffic="true"
+        tools:targetApi="31">
+
+        <!-- 主界面 -->
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.NASMovie">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- 电影详情页 -->
+        <activity
+            android:name=".ui.DetailActivity"
+            android:label="@string/movie_detail"
+            android:parentActivityName=".ui.MainActivity" />
+
+        <!-- 视频播放器 (VLC) -->
+        <activity
+            android:name=".ui.VlcPlayerActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize"
+            android:label="@string/video_player"
+            android:screenOrientation="sensorPortrait"
+            android:theme="@style/Theme.NASMovie.Player" />
+
+        <!-- 设置页 -->
+        <activity
+            android:name=".ui.SettingsActivity"
+            android:label="@string/settings"
+            android:parentActivityName=".ui.MainActivity" />
+
+        <!-- 服务器管理页 -->
+        <activity
+            android:name=".ui.ServerManageActivity"
+            android:label="@string/server_manage"
+            android:parentActivityName=".ui.SettingsActivity" />
+
+        <!-- 服务器编辑页 -->
+        <activity
+            android:name=".ui.ServerEditActivity"
+            android:label="@string/add_server"
+            android:parentActivityName=".ui.ServerManageActivity" />
+
+        <!-- 锁屏验证页 -->
+        <activity
+            android:name=".ui.LockActivity"
+            android:label="@string/app_lock"
+            android:theme="@style/Theme.NASMovie"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateAlwaysHidden" />
+
+    </application>
+
+</manifest>

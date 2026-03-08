@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/colorBackground"
+    android:gravity="center_horizontal">
+
+    <!-- 顶部图标和标题 -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_marginTop="80dp">
+
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:src="@drawable/ic_lock"
+            android:tint="@color/colorPrimary" />
+
+        <TextView
+            android:id="@+id/tv_lock_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="应用锁"
+            android:textSize="24sp"
+            android:textColor="@color/textPrimary"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_lock_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="请输入密码解锁"
+            android:textSize="14sp"
+            android:textColor="@color/textSecondary" />
+
+    </LinearLayout>
+
+    <!-- 密码圆点指示器 -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="48dp"
+        android:layout_marginBottom="24dp">
+
+        <View
+            android:id="@+id/dot_1"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_margin="12dp"
+            android:background="@drawable/bg_dot_empty" />
+
+        <View
+            android:id="@+id/dot_2"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_margin="12dp"
+            android:background="@drawable/bg_dot_empty" />
+
+        <View
+            android:id="@+id/dot_3"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_margin="12dp"
+            android:background="@drawable/bg_dot_empty" />
+
+        <View
+            android:id="@+id/dot_4"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_margin="12dp"
+            android:background="@drawable/bg_dot_empty" />
+
+    </LinearLayout>
+
+    <!-- 错误提示 -->
+    <TextView
+        android:id="@+id/tv_lock_error"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text=""
+        android:textSize="14sp"
+        android:textColor="@android:color/holo_red_light"
+        android:visibility="gone" />
+
+    <!-- 数字键盘 -->
+    <GridLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:columnCount="3"
+        android:rowCount="4"
+        android:layout_marginTop="16dp">
+
+        <!-- 第1行 -->
+        <TextView
+            android:id="@+id/btn_1"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:gravity="center"
+            android:text="1"
+            android:textSize="28sp"
+            android:textColor="@color/textPrimary"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/btn_2"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:gravity="center"
+            android:text="2"
+            android:textSize="28sp"
+            android:textColor="@color/textPrimary"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/btn_3"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:gravity="center"
+            android:text="3"
+            android:textSize="28sp"
+            android:textColor="@color/textPrimary"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <!-- 第2行 -->
+        <TextView
+            android:id="@+id/btn_4"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:gravity="center"
+            android:text="4"
+            android:textSize="28sp"
+            android:textColor="@color/textPrimary"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/btn_5"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:gravity="center"
+            android:text="5"
+            android:textSize="28sp"
+            android:textColor="@color/textPrimary"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/btn_6"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:gravity="center"
+            android:text="6"
+            android:textSize="28sp"
+            android:textColor="@color/textPrimary"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <!-- 第3行 -->
+        <TextView
+            android:id="@+id/btn_7"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:gravity="center"
+            android:text="7"
+            android:textSize="28sp"
+            android:textColor="@color/textPrimary"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/btn_8"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:gravity="center"
+            android:text="8"
+            android:textSize="28sp"
+            android:textColor="@color/textPrimary"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/btn_9"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:gravity="center"
+            android:text="9"
+            android:textSize="28sp"
+            android:textColor="@color/textPrimary"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <!-- 第4行 -->
+        <View
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp" />
+
+        <TextView
+            android:id="@+id/btn_0"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:gravity="center"
+            android:text="0"
+            android:textSize="28sp"
+            android:textColor="@color/textPrimary"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <ImageView
+            android:id="@+id/btn_delete"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:padding="24dp"
+            android:src="@drawable/ic_back"
+            android:tint="@color/textSecondary"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true" />
+
+    </GridLayout>
+
+</LinearLayout>

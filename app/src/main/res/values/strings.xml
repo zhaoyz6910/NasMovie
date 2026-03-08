@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NAS影视库</string>
+    <string name="movie_detail">电影详情</string>
+    <string name="video_player">视频播放</string>
+    <string name="settings">设置</string>
+    <string name="server_manage">服务器管理</string>
+
+    <!-- 导航 -->
+    <string name="nav_all_movies">全部电影</string>
+    <string name="nav_favorites">我的收藏</string>
+    <string name="nav_recent">最近观看</string>
+
+    <!-- 搜索 -->
+    <string name="search_hint">搜索电影...</string>
+    <string name="search_no_result">未找到相关电影</string>
+
+    <!-- 电影信息 -->
+    <string name="movie_title">标题</string>
+    <string name="movie_year">年份</string>
+    <string name="movie_rating">评分</string>
+    <string name="movie_duration">时长</string>
+    <string name="movie_director">导演</string>
+    <string name="movie_actors">演员</string>
+    <string name="movie_plot">剧情简介</string>
+    <string name="movie_no_plot">暂无简介</string>
+
+    <!-- 操作 -->
+    <string name="play">播放</string>
+    <string name="resume_play">继续播放</string>
+    <string name="add_favorite">收藏</string>
+    <string name="remove_favorite">取消收藏</string>
+    <string name="select_subtitle">选择字幕</string>
+    <string name="no_subtitle">无字幕</string>
+    <string name="fullscreen">全屏</string>
+    <string name="back">返回</string>
+    <string name="lock">锁定</string>
+
+    <!-- 服务器管理 -->
+    <string name="add_server">添加服务器</string>
+    <string name="edit_server">编辑服务器</string>
+    <string name="delete_server">删除服务器</string>
+    <string name="server_name">服务器名称</string>
+    <string name="server_host">IP地址</string>
+    <string name="server_port">端口</string>
+    <string name="server_share">共享文件夹</string>
+    <string name="server_path">电影路径</string>
+    <string name="server_username">用户名</string>
+    <string name="server_password">密码</string>
+    <string name="server_anonymous">匿名登录</string>
+    <string name="server_default">设为默认</string>
+    <string name="test_connection">测试连接</string>
+    <string name="connection_success">连接成功</string>
+    <string name="connection_failed">连接失败</string>
+
+    <!-- 扫描 -->
+    <string name="scan_library">扫描媒体库</string>
+    <string name="scanning">正在扫描...</string>
+    <string name="scan_complete">扫描完成，共发现 %d 部电影</string>
+    <string name="no_movies">暂无电影</string>
+
+    <!-- 设置 -->
+    <string name="theme_light">浅色模式</string>
+    <string name="theme_dark">深色模式</string>
+    <string name="theme_system">跟随系统</string>
+    <string name="clear_cache">清除缓存</string>
+    <string name="about">关于</string>
+    <string name="app_lock">应用锁</string>
+    <string name="change_password">修改密码</string>
+    <string name="lock_enabled">已开启</string>
+    <string name="lock_disabled">已关闭</string>
+
+    <!-- 播放器 -->
+    <string name="player_brightness">亮度</string>
+    <string name="player_volume">音量</string>
+    <string name="player_seek">快进/快退</string>
+    <string name="player_loading">加载中...</string>
+
+    <!-- 错误提示 -->
+    <string name="error_unknown">未知错误</string>
+    <string name="error_network">网络错误</string>
+    <string name="error_playback">播放失败</string>
+    <string name="error_no_server">请先添加服务器</string>
+
+    <!-- 确认 -->
+    <string name="confirm">确定</string>
+    <string name="cancel">取消</string>
+    <string name="delete_confirm">确定要删除吗？</string>
+
+    <!-- 时间格式 -->
+    <string name="duration_format">%d分钟</string>
+    <string name="year_format">%d年</string>
+
+    <!-- 分钟 -->
+    <string name="minute">分钟</string>
+</resources>
