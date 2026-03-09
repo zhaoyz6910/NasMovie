@@ -1,6 +1,7 @@
 # NAS影视库
 
 一款基于 SMB 协议的 NAS 影视管理与播放应用，支持自动扫描、元数据解析、海报展示和视频播放。
+需搭配刮削器使用，建议用MDC-NG:https://github.com/mdc-ng/mdc-ng
 
 ## 功能特性
 
