@@ -1,5 +1,6 @@
 package com.example.nasmovie.ui;
 
+import android.animation.ValueAnimator;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -8,6 +9,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -66,7 +68,6 @@ public class VlcPlayerActivity extends AppCompatActivity implements
     private ImageButton btnPlayPause;
     private ImageButton btnBack;
     private ImageButton btnFullscreen;
-//    private ImageButton btnLock;
     private ProgressBar progressBar;
 
     // Subtitle
@@ -116,6 +117,7 @@ public class VlcPlayerActivity extends AppCompatActivity implements
         loadMovie();
 
         hideSystemUI();
+        keepScreenOn(true);
     }
 
     private void initViews() {
@@ -131,7 +133,6 @@ public class VlcPlayerActivity extends AppCompatActivity implements
         btnPlayPause = findViewById(R.id.btn_play_pause);
         btnBack = findViewById(R.id.btn_back);
         btnFullscreen = findViewById(R.id.btn_fullscreen);
-//        btnLock = findViewById(R.id.btn_lock);
         progressBar = findViewById(R.id.progress_bar);
         tvSubtitle = findViewById(R.id.tv_subtitle);
 
@@ -144,9 +145,6 @@ public class VlcPlayerActivity extends AppCompatActivity implements
 
         // Back button
         btnBack.setOnClickListener(v -> onBackPressed());
-
-        // Lock button
-//        btnLock.setOnClickListener(v -> toggleLock());
 
         // Fullscreen button
         btnFullscreen.setOnClickListener(v -> toggleFullscreen());
@@ -337,7 +335,7 @@ public class VlcPlayerActivity extends AppCompatActivity implements
 
                 // Build SMB URL with authentication
                 String smbUrl = buildSmbUrl(config, movie.getVideoPath());
-                Log.d(TAG, "SMB URL: " + smbUrl);
+                Log.d(TAG, "Playing SMB video from server: " + config.getHost());
 
                 // Load subtitles
                 loadSubtitles(config);
@@ -496,17 +494,6 @@ public class VlcPlayerActivity extends AppCompatActivity implements
         startHideControlsTimer();
     }
 
-//    private void toggleLock() {
-//        isLocked = !isLocked;
-//        if (isLocked) {
-//            btnLock.setImageResource(R.drawable.ic_lock);
-//            hideControls();
-//        } else {
-//            btnLock.setImageResource(R.drawable.ic_unlock);
-//            showControls();
-//        }
-//    }
-
     private void toggleFullscreen() {
         isFullscreen = !isFullscreen;
         if (isFullscreen) {
@@ -536,6 +523,9 @@ public class VlcPlayerActivity extends AppCompatActivity implements
         topBar.setVisibility(View.VISIBLE);
         controlsLayout.setVisibility(View.VISIBLE);
         startHideControlsTimer();
+
+        // 字幕上移，避免被控制栏遮挡
+        adjustSubtitlePosition(true);
     }
 
     private void hideControls() {
@@ -543,6 +533,9 @@ public class VlcPlayerActivity extends AppCompatActivity implements
         topBar.setVisibility(View.GONE);
         controlsLayout.setVisibility(View.GONE);
         handler.removeCallbacks(hideControlsRunnable);
+
+        // 字幕下移，靠近屏幕底部
+        adjustSubtitlePosition(false);
     }
 
     private void startHideControlsTimer() {
@@ -655,6 +648,7 @@ public class VlcPlayerActivity extends AppCompatActivity implements
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        keepScreenOn(false);
         stopProgressUpdate();
         handler.removeCallbacks(hideControlsRunnable);
 
@@ -686,6 +680,18 @@ public class VlcPlayerActivity extends AppCompatActivity implements
             | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
             | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         );
+    }
+
+    /**
+     * 设置屏幕常亮
+     * @param keepOn true 保持屏幕常亮, false 恢复系统自动锁屏
+     */
+    private void keepScreenOn(boolean keepOn) {
+        if (keepOn) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        } else {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
     }
 
     // ==================== GestureCallback Implementation ====================
@@ -744,5 +750,27 @@ public class VlcPlayerActivity extends AppCompatActivity implements
         if (gestureHintLayout != null) {
             gestureHintLayout.setVisibility(View.GONE);
         }
+    }
+
+    /**
+     * 调整字幕位置
+     * @param controlsVisible 控制栏是否显示
+     */
+    private void adjustSubtitlePosition(boolean controlsVisible) {
+        if (tvSubtitle == null) return;
+
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) tvSubtitle.getLayoutParams();
+        int targetMargin = controlsVisible
+            ? (int) (95 * getResources().getDisplayMetrics().density)  // 控制栏显示时
+            : (int) (32 * getResources().getDisplayMetrics().density);  // 控制栏隐藏时
+
+        // 使用动画过渡
+        ValueAnimator animator = ValueAnimator.ofInt(params.bottomMargin, targetMargin);
+        animator.setDuration(200);
+        animator.addUpdateListener(animation -> {
+            params.bottomMargin = (int) animation.getAnimatedValue();
+            tvSubtitle.setLayoutParams(params);
+        });
+        animator.start();
     }
 }
