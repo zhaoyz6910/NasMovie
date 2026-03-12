@@ -41,8 +41,20 @@ public class Movie {
     private String serverId;        // 所属服务器ID
     private String folderPath;      // 文件夹路径
 
+    @androidx.room.Ignore
+    private int progress = -1;      // 播放进度百分比 (0-100)，-1 表示无进度
+
     public Movie() {
         this.addTime = System.currentTimeMillis();
+    }
+
+    // Getters and Setters
+    public int getProgress() {
+        return progress;
+    }
+
+    public void setProgress(int progress) {
+        this.progress = progress;
     }
 
     // Getters and Setters

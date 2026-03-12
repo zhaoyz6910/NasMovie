@@ -50,7 +50,7 @@ public interface MovieDao {
     @Query("SELECT * FROM movie WHERE serverId = :serverId ORDER BY title ASC")
     List<Movie> getByServerId(String serverId);
 
-    @Query("SELECT * FROM movie WHERE LOWER(title) LIKE '%' || LOWER(:keyword) || '%' OR LOWER(originalTitle) LIKE '%' || LOWER(:keyword) || '%'")
+    @Query("SELECT * FROM movie WHERE LOWER(title) LIKE '%' || LOWER(:keyword) || '%' OR LOWER(originalTitle) LIKE '%' || LOWER(:keyword) || '%' OR LOWER(actors) LIKE '%' || LOWER(:keyword) || '%'")
     List<Movie> search(String keyword);
 
     @Query("SELECT * FROM movie WHERE id IN (:ids)")

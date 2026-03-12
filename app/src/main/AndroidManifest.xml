@@ -32,7 +32,7 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
-        <!-- 主界面 -->
+        <!-- 主界面 (新首页2) -->
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"
@@ -44,12 +44,6 @@
             </intent-filter>
         </activity>
 
-        <!-- 电影详情页 -->
-        <activity
-            android:name=".ui.DetailActivity"
-            android:label="@string/movie_detail"
-            android:parentActivityName=".ui.MainActivity" />
-
         <!-- 视频播放器 (VLC) -->
         <activity
             android:name=".ui.VlcPlayerActivity"
@@ -57,24 +51,6 @@
             android:label="@string/video_player"
             android:screenOrientation="sensorPortrait"
             android:theme="@style/Theme.NASMovie.Player" />
-
-        <!-- 设置页 -->
-        <activity
-            android:name=".ui.SettingsActivity"
-            android:label="@string/settings"
-            android:parentActivityName=".ui.MainActivity" />
-
-        <!-- 服务器管理页 -->
-        <activity
-            android:name=".ui.ServerManageActivity"
-            android:label="@string/server_manage"
-            android:parentActivityName=".ui.SettingsActivity" />
-
-        <!-- 服务器编辑页 -->
-        <activity
-            android:name=".ui.ServerEditActivity"
-            android:label="@string/add_server"
-            android:parentActivityName=".ui.ServerManageActivity" />
 
         <!-- 锁屏验证页 -->
         <activity

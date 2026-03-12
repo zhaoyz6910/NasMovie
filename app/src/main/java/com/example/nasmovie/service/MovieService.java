@@ -20,12 +20,14 @@ public class MovieService {
     private final MovieRepository repository;
     private final SmbConfigDao smbConfigDao;
     private final ExecutorService executor;
+    private final ScanService scanService;
 
     public MovieService(Context context) {
         this.context = context;
         this.repository = new MovieRepository(context);
         this.smbConfigDao = com.example.nasmovie.NASMovieApp.getInstance().getDatabase().smbConfigDao();
         this.executor = Executors.newSingleThreadExecutor();
+        this.scanService = new ScanService(context);
     }
 
     // ==================== 服务器管理 ====================
@@ -104,8 +106,22 @@ public class MovieService {
     /**
      * 扫描媒体库
      */
-    public void scanLibrary(SmbConfig config, MovieRepository.ScanCallback callback) {
-        repository.scanLibrary(config, callback);
+    public void scanLibrary(long serverId, ScanService.ScanCallback callback) {
+        scanService.scanServer(serverId, callback);
+    }
+
+    /**
+     * 扫描所有媒体库
+     */
+    public void scanAllLibraries(ScanService.ScanCallback callback) {
+        scanService.scanAllServers(callback);
+    }
+
+    /**
+     * 停止扫描
+     */
+    public void stopScan() {
+        scanService.stopScan();
     }
 
     // ==================== 收藏操作 ====================

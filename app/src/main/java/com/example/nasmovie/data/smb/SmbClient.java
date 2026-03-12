@@ -85,7 +85,7 @@ public class SmbClient {
             Log.i(TAG, "Connected to SMB server: " + config.getHost());
             return true;
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             Log.e(TAG, "Connection error: " + e.getMessage(), e);
             disconnect();
             return false;
@@ -101,8 +101,8 @@ public class SmbClient {
             try {
                 // 尝试列出根目录来验证访问权限
                 diskShare.list(config.getMoviePath() != null ? config.getMoviePath() : "");
-            } catch (SMBApiException e) {
-                Log.e(TAG, "Access denied: " + e.getMessage());
+            } catch (Exception e) {
+                Log.e(TAG, "Access denied or authentication error during test: " + e.getMessage());
                 success = false;
             }
         }

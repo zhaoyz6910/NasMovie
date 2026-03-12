@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 深色模式主题覆盖 -->
+    <style name="Theme.NASMovie" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <!-- Primary brand colors. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+
+        <!-- Toolbar icon color -->
+        <item name="colorControlNormal">@android:color/white</item>
+        <item name="colorOnSurface">@android:color/white</item>
+
+        <!-- Background colors -->
+        <item name="android:windowBackground">@color/colorBackground</item>
+        <item name="backgroundColor">@color/colorBackground</item>
+
+        <!-- Status bar -->
+        <item name="android:statusBarColor">@color/colorPrimaryDark</item>
+
+        <!-- Navigation bar -->
+        <item name="android:navigationBarColor">@color/colorPrimaryDark</item>
+
+        <!-- Action bar -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+</resources>

@@ -155,13 +155,22 @@ public class SubtitleManager {
     }
 
     /**
-     * 查找指定时间对应的字幕索引
+     * 查找指定时间对应的字幕索引（二分查找优化）
      */
     private int findSubtitleIndex(long positionMs) {
-        for (int i = 0; i < entries.size(); i++) {
-            SubtitleParser.SubtitleEntry entry = entries.get(i);
+        int left = 0;
+        int right = entries.size() - 1;
+
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            SubtitleParser.SubtitleEntry entry = entries.get(mid);
+
             if (positionMs >= entry.startTimeMs && positionMs <= entry.endTimeMs) {
-                return i;
+                return mid;
+            } else if (positionMs < entry.startTimeMs) {
+                right = mid - 1;
+            } else {
+                left = mid + 1;
             }
         }
         return -1;

@@ -34,6 +34,9 @@ public class SmbImageLoader {
      * 获取缓存实例
      */
     public static SmbImageCache getCache() {
+        if (imageCache == null) {
+            imageCache = com.example.nasmovie.NASMovieApp.getInstance().getImageCache();
+        }
         return imageCache;
     }
 
@@ -47,6 +50,11 @@ public class SmbImageLoader {
         if (movie == null) {
             loadPlaceholder(context, imageView);
             return;
+        }
+
+        // 确保缓存已初始化
+        if (imageCache == null) {
+            imageCache = com.example.nasmovie.NASMovieApp.getInstance().getImageCache();
         }
 
         Log.d(TAG, "Loading poster for: " + movie.getTitle());
@@ -95,6 +103,9 @@ public class SmbImageLoader {
             return;
         }
 
+        // 确保缓存已初始化
+        getCache();
+
         // 详情页优先使用 localThumbPath（对应 thumb.jpg）
         String localPath = movie.getLocalThumbPath();
         if (localPath != null && !localPath.isEmpty() && new java.io.File(localPath).exists()) {
@@ -134,9 +145,7 @@ public class SmbImageLoader {
         }
 
         // 确保缓存已初始化
-        if (imageCache == null) {
-            init(context);
-        }
+        getCache();
 
         // 检查本地缓存
         String cachedPath = imageCache.getCachedImagePath(posterPath);
@@ -167,12 +176,14 @@ public class SmbImageLoader {
             .into(imageView);
     }
 
+    private static java.util.concurrent.ExecutorService dbExecutor = java.util.concurrent.Executors.newSingleThreadExecutor();
+
     /**
      * 下载并加载图片
      */
     private static void downloadAndLoad(Context context, String posterPath, String serverId, ImageView imageView) {
-        // 在后台线程获取服务器配置
-        new Thread(() -> {
+        // 在后台线程获取服务器配置，避免阻塞 UI 线程
+        dbExecutor.execute(() -> {
             try {
                 // 从数据库获取服务器配置
                 com.example.nasmovie.data.db.AppDatabase database =
@@ -184,24 +195,20 @@ public class SmbImageLoader {
                     try {
                         config = dao.getById(Long.parseLong(serverId));
                     } catch (NumberFormatException e) {
-                        // serverId 不是数字，尝试获取第一个服务器
-                        List<com.example.nasmovie.data.model.SmbConfig> allServers = dao.getAll();
-                        if (!allServers.isEmpty()) {
-                            config = allServers.get(0);
-                        }
+                        // serverId 不是数字，忽略
                     }
                 }
 
                 if (config == null) {
                     // 没有指定服务器，获取第一个
-                    List<com.example.nasmovie.data.model.SmbConfig> allServers = dao.getAll();
+                    java.util.List<com.example.nasmovie.data.model.SmbConfig> allServers = dao.getAll();
                     if (!allServers.isEmpty()) {
                         config = allServers.get(0);
                     }
                 }
 
                 if (config == null) {
-                    android.util.Log.e("SmbImageLoader", "No SMB config found");
+                    android.util.Log.e("SmbImageLoader", "No SMB config found for poster: " + posterPath);
                     return;
                 }
 
@@ -210,30 +217,27 @@ public class SmbImageLoader {
                 imageCache.downloadImageAsync(posterPath, config, new SmbImageCache.DownloadCallback() {
                     @Override
                     public void onSuccess(String localPath) {
-                        // 下载成功，在主线程加载图片
-                        if (imageView.getContext() instanceof android.app.Activity) {
-                            ((android.app.Activity) imageView.getContext()).runOnUiThread(() -> {
-                                Glide.with(context)
-                                    .load(new java.io.File(localPath))
-                                    .placeholder(R.drawable.bg_poster_placeholder)
-                                    .error(R.drawable.bg_poster_placeholder)
-                                    .diskCacheStrategy(DiskCacheStrategy.NONE)
-                                    .into(imageView);
-                            });
-                        }
+                        // 下载成功，使用 post 确保在 UI 线程且 ImageView 未被回收时加载
+                        imageView.post(() -> {
+                            Glide.with(imageView.getContext())
+                                .load(new java.io.File(localPath))
+                                .placeholder(R.drawable.bg_poster_placeholder)
+                                .error(R.drawable.bg_poster_placeholder)
+                                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                                .into(imageView);
+                        });
                     }
 
                     @Override
                     public void onError(String error) {
-                        android.util.Log.e("SmbImageLoader", "Download failed: " + error);
-                        // 保持占位图
+                        android.util.Log.e("SmbImageLoader", "Download failed for " + posterPath + ": " + error);
                     }
                 });
 
             } catch (Exception e) {
-                android.util.Log.e("SmbImageLoader", "Error: " + e.getMessage(), e);
+                android.util.Log.e("SmbImageLoader", "Error in downloadAndLoad: " + e.getMessage(), e);
             }
-        }).start();
+        });
     }
 
     /**
@@ -247,8 +251,8 @@ public class SmbImageLoader {
             return;
         }
 
-        // 异步下载（不加载到 ImageView）
-        new Thread(() -> {
+        // 使用背景执行器查询数据库
+        dbExecutor.execute(() -> {
             try {
                 com.example.nasmovie.data.db.AppDatabase database =
                     com.example.nasmovie.NASMovieApp.getInstance().getDatabase();
@@ -259,26 +263,24 @@ public class SmbImageLoader {
                     try {
                         config = dao.getById(Long.parseLong(serverId));
                     } catch (NumberFormatException e) {
-                        List<com.example.nasmovie.data.model.SmbConfig> allServers = dao.getAll();
-                        if (!allServers.isEmpty()) {
-                            config = allServers.get(0);
-                        }
+                        // ignore
                     }
                 }
 
                 if (config == null) {
-                    List<com.example.nasmovie.data.model.SmbConfig> allServers = dao.getAll();
+                    java.util.List<com.example.nasmovie.data.model.SmbConfig> allServers = dao.getAll();
                     if (!allServers.isEmpty()) {
                         config = allServers.get(0);
                     }
                 }
 
                 if (config != null) {
+                    // downloadImage 会在内部处理连接和下载
                     imageCache.downloadImage(posterPath, config);
                 }
             } catch (Exception e) {
                 android.util.Log.e("SmbImageLoader", "Preload error: " + e.getMessage());
             }
-        }).start();
+        });
     }
 }

@@ -19,7 +19,7 @@ public class PlayerGestureHandler extends GestureDetector.SimpleOnGestureListene
     private static final int GESTURE_VOLUME = 2;
     private static final int GESTURE_SEEK = 3;
 
-    private static final int SEEk_STEP = 10000; // 10秒
+    private static final int SEEK_STEP = 10000; // 10秒
 
     private final Context context;
     private final View playerView;

@@ -1,29 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@color/colorBackground">
 
-    <com.google.android.material.appbar.AppBarLayout
+    <!-- Header -->
+    <com.example.nasmovie.view.NasToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/colorPrimary"
-            app:title="@string/add_server"
-            app:titleTextColor="@android:color/white"
-            app:navigationIcon="@drawable/ic_back" />
-
-    </com.google.android.material.appbar.AppBarLayout>
-
+    <!-- Scrollable Content -->
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:overScrollMode="never"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintBottom_toTopOf="@id/bottom_buttons_container">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -32,153 +29,158 @@
             android:padding="16dp">
 
             <!-- 服务器名称 -->
-            <com.google.android.material.textfield.TextInputLayout
+            <EditText
+                android:id="@+id/et_server_name"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/server_name"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                android:layout_height="56dp"
+                android:layout_marginBottom="14dp"
+                android:background="@drawable/bg_input_field"
+                android:hint="服务器名称"
+                android:inputType="text"
+                android:paddingHorizontal="16dp"
+                android:textColor="@android:color/white"
+                android:textColorHint="@color/iosGray"
+                android:textSize="16sp" />
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_name"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="text"
-                    android:maxLines="1" />
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- IP地址 -->
-            <com.google.android.material.textfield.TextInputLayout
+            <!-- IP 地址 -->
+            <EditText
+                android:id="@+id/et_server_host"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:hint="@string/server_host"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_host"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textUri"
-                    android:maxLines="1" />
-
-            </com.google.android.material.textfield.TextInputLayout>
+                android:layout_height="56dp"
+                android:layout_marginBottom="14dp"
+                android:background="@drawable/bg_input_field"
+                android:hint="IP 地址"
+                android:inputType="text"
+                android:paddingHorizontal="16dp"
+                android:textColor="@android:color/white"
+                android:textColorHint="@color/iosGray"
+                android:textSize="16sp" />
 
             <!-- 端口 -->
-            <com.google.android.material.textfield.TextInputLayout
+            <EditText
+                android:id="@+id/et_server_port"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:hint="@string/server_port"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                android:layout_height="56dp"
+                android:layout_marginBottom="14dp"
+                android:background="@drawable/bg_input_field"
+                android:hint="端口：默认445"
+                android:inputType="number"
+                android:paddingHorizontal="16dp"
+                android:text="445"
+                android:textColor="@android:color/white"
+                android:textColorHint="@color/iosGray"
+                android:textSize="16sp" />
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_port"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="number"
-                    android:maxLines="1"
-                    android:text="445" />
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- 共享文件夹 -->
-            <com.google.android.material.textfield.TextInputLayout
+            <!-- 共享文件夹名 -->
+            <EditText
+                android:id="@+id/et_server_share"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:hint="@string/server_share"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                android:layout_height="56dp"
+                android:layout_marginBottom="14dp"
+                android:background="@drawable/bg_input_field"
+                android:hint="共享文件夹名"
+                android:inputType="text"
+                android:paddingHorizontal="16dp"
+                android:textColor="@android:color/white"
+                android:textColorHint="@color/iosGray"
+                android:textSize="16sp" />
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_share"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="text"
-                    android:maxLines="1" />
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- 电影路径 -->
-            <com.google.android.material.textfield.TextInputLayout
+            <!-- 电影路径 (可选) -->
+            <EditText
+                android:id="@+id/et_movie_path"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:hint="@string/server_path"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                android:layout_height="56dp"
+                android:layout_marginBottom="14dp"
+                android:background="@drawable/bg_input_field"
+                android:hint="电影路径（可选）"
+                android:inputType="text"
+                android:paddingHorizontal="16dp"
+                android:textColor="@android:color/white"
+                android:textColorHint="@color/iosGray"
+                android:textSize="16sp" />
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_path"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="text"
-                    android:maxLines="1" />
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- 用户名 -->
-            <com.google.android.material.textfield.TextInputLayout
+            <!-- 用户名 (可选) -->
+            <EditText
+                android:id="@+id/et_username"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:hint="@string/server_username"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                android:layout_height="56dp"
+                android:layout_marginBottom="14dp"
+                android:background="@drawable/bg_input_field"
+                android:hint="用户名（可选）"
+                android:inputType="text"
+                android:paddingHorizontal="16dp"
+                android:textColor="@android:color/white"
+                android:textColorHint="@color/iosGray"
+                android:textSize="16sp" />
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_username"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="text"
-                    android:maxLines="1" />
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- 密码 -->
-            <com.google.android.material.textfield.TextInputLayout
+            <!-- 密码 (可选，带显隐切换) -->
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:hint="@string/server_password"
-                app:endIconMode="password_toggle"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                android:layout_height="56dp"
+                android:background="@drawable/bg_input_field"
+                android:paddingHorizontal="16dp">
 
-                <com.google.android.material.textfield.TextInputEditText
+                <EditText
                     android:id="@+id/et_password"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_toStartOf="@id/btn_toggle_password"
+                    android:background="@android:color/transparent"
+                    android:hint="密码（可选）"
                     android:inputType="textPassword"
-                    android:maxLines="1" />
+                    android:textColor="@android:color/white"
+                    android:textColorHint="@color/iosGray"
+                    android:textSize="16sp" />
 
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- 按钮区域 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:orientation="horizontal">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_test"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
-                    android:text="@string/test_connection" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_save"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:text="@string/confirm" />
-
-            </LinearLayout>
+                <ImageButton
+                    android:id="@+id/btn_toggle_password"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_visibility"
+                    app:tint="@color/iosGray" />
+            </RelativeLayout>
 
         </LinearLayout>
-
     </ScrollView>
 
-</LinearLayout>
+    <!-- Bottom Buttons -->
+    <LinearLayout
+        android:id="@+id/bottom_buttons_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:paddingBottom="32dp"
+        android:background="@color/colorBackground"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_test"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="测试连接"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            app:cornerRadius="28dp"
+            app:backgroundTint="@color/iosBlue" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_save"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="保存"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            app:cornerRadius="28dp"
+            app:backgroundTint="@color/iosBlue" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

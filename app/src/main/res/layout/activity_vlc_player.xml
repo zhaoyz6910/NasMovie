@@ -70,15 +70,6 @@
             android:maxLines="1"
             android:ellipsize="end" />
 
-<!--        <ImageButton-->
-<!--            android:id="@+id/btn_lock"-->
-<!--            android:layout_width="48dp"-->
-<!--            android:layout_height="48dp"-->
-<!--            android:background="?attr/selectableItemBackgroundBorderless"-->
-<!--            android:src="@drawable/ic_unlock"-->
-<!--            android:contentDescription="@string/lock"-->
-<!--            app:tint="@android:color/white" />-->
-
     </LinearLayout>
 
     <!-- Controls Layout -->

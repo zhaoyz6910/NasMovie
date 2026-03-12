@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 已废弃，请使用 item_movie_grid.xml 或 item_movie_horizontal_scroll.xml -->
+<com.example.nasmovie.view.MovieCard
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/movie_card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp" />

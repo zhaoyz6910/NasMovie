@@ -58,6 +58,7 @@
     <string name="scanning">正在扫描...</string>
     <string name="scan_complete">扫描完成，共发现 %d 部电影</string>
     <string name="no_movies">暂无电影</string>
+    <string name="scan_hint">点击扫描添加电影</string>
 
     <!-- 设置 -->
     <string name="theme_light">浅色模式</string>
@@ -93,4 +94,18 @@
 
     <!-- 分钟 -->
     <string name="minute">分钟</string>
+
+    <!-- 首页2 -->
+    <string name="home2_title">首页2 (实验性)</string>
+    <string name="home2_subtitle">全新设计的现代化首页</string>
+    <string name="section_recent">最近观看</string>
+    <string name="section_high_rated">高评分</string>
+    <string name="section_newest">最新添加</string>
+    <string name="section_all_movies">全部电影</string>
+    <string name="view_more">查看更多</string>
+    <string name="movie_poster">电影海报</string>
+
+    <!-- 搜索 -->
+    <string name="search_title">搜索</string>
+    <string name="search_history">搜索历史</string>
 </resources>

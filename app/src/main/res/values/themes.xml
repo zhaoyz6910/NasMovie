@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.NASMovie" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="Theme.NASMovie" parent="Theme.MaterialComponents.NoActionBar">
         <!-- Primary brand colors. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+
+        <!-- Toolbar icon color (包括溢出菜单按钮) -->
+        <item name="colorControlNormal">@android:color/white</item>
+        <item name="colorOnSurface">@android:color/white</item>
 
         <!-- Background colors -->
         <item name="android:windowBackground">@color/colorBackground</item>
@@ -14,13 +18,16 @@
         <!-- Status bar -->
         <item name="android:statusBarColor">@color/colorPrimaryDark</item>
 
+        <!-- Navigation bar -->
+        <item name="android:navigationBarColor">@color/colorPrimaryDark</item>
+
         <!-- Action bar -->
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
 
     <!-- Player theme (fullscreen) -->
-    <style name="Theme.NASMovie.Player" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.NASMovie.Player" parent="Theme.MaterialComponents.NoActionBar">
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:statusBarColor">@android:color/transparent</item>

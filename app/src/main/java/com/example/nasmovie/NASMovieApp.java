@@ -5,6 +5,8 @@ import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.appcompat.app.AppCompatDelegate;
+
 import com.example.nasmovie.data.db.AppDatabase;
 import com.example.nasmovie.data.smb.SmbImageCache;
 import com.example.nasmovie.ui.LockActivity;
@@ -32,6 +34,9 @@ public class NASMovieApp extends Application implements Application.ActivityLife
         database = AppDatabase.getInstance(this);
         imageCache = new SmbImageCache(this);
         preferenceManager = new PreferenceManager(this);
+
+        // 固定使用深色主题
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
 
         // 注册Activity生命周期回调
         registerActivityLifecycleCallbacks(this);

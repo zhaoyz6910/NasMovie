@@ -1,26 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 主色调（深色模式） -->
-    <color name="colorPrimary">#90CAF9</color>
-    <color name="colorPrimaryDark">#42A5F5</color>
-    <color name="colorAccent">#90CAF9</color>
+    <!-- 主色调（深色模式） - 科技蓝 -->
+    <color name="colorPrimary">#1E75D3</color>
+    <color name="colorPrimaryDark">#121212</color>
+    <color name="colorAccent">#1E75D3</color>
 
     <!-- 背景色 -->
-    <color name="colorBackground">#121212</color>
-    <color name="colorSurface">#1E1E1E</color>
+    <color name="colorBackground">#000000</color>
+    <color name="colorSurface">#1C1C1E</color>
+
+    <!-- iOS 风格色彩 -->
+    <color name="iosBlue">#0A84FF</color>
+    <color name="iosGray">#8E8E93</color>
+    <color name="iosProgressTrack">#3A3A3C</color>
+    <color name="iosDivider">#38383A</color>
 
     <!-- 文字颜色 -->
     <color name="textPrimary">#FFFFFF</color>
-    <color name="textSecondary">#B0B0B0</color>
-    <color name="textHint">#757575</color>
+    <color name="textSecondary">#A0A0A0</color>
+    <color name="textHint">#666666</color>
 
     <!-- 其他 -->
-    <color name="divider">#333333</color>
-    <color name="ratingBackground">#1976D2</color>
+    <color name="divider">#2C2C2E</color>
+    <color name="ratingBackground">#E50914</color>
     <color name="progressBackground">#33FFFFFF</color>
 
     <!-- 播放器 -->
     <color name="playerControlBackground">#80000000</color>
-    <color name="playerProgress">#FF8A65</color>
+    <color name="playerProgress">#E50914</color>
     <color name="playerBuffered">#33FFFFFF</color>
+
+    <!-- 按钮配色方案 - 科技蓝 -->
+    <!-- 播放按钮 - 渐变色 -->
+    <color name="btnPlayStart">#1E75D3</color>
+    <color name="btnPlayEnd">#1565C0</color>
+    <color name="btnPlayPressed">#0D47A1</color>
+
+    <!-- 收藏按钮 -->
+    <color name="btnFavorite">#1E75D3</color>
+    <color name="btnFavoriteBorder">#64B5F6</color>
+
+    <!-- 主操作按钮 -->
+    <color name="btnPrimary">#1E75D3</color>
+    <color name="btnPrimaryPressed">#1565C0</color>
+
+    <!-- 次要按钮 -->
+    <color name="btnSecondary">#2C2C2E</color>
+    <color name="btnSecondaryStroke">#3A3A3C</color>
+
+    <!-- 评分金色 -->
+    <color name="ratingGold">#FFD700</color>
+    <color name="ratingGoldDark">#B8860B</color>
+
+    <!-- 渐变遮罩 -->
+    <color name="gradientStart">#00000000</color>
+    <color name="gradientEnd">#CC000000</color>
 </resources>

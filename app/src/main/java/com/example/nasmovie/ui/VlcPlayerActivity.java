@@ -592,12 +592,22 @@ public class VlcPlayerActivity extends AppCompatActivity implements
         if (mediaPlayer == null || movieId == null) return;
 
         long position = mediaPlayer.getTime();
-        long duration = mediaPlayer.getLength();
+        long durationMs = mediaPlayer.getLength();
 
-        if (position > 0 && duration > 0) {
+        if (position > 0 && durationMs > 0) {
             // Save to database in background thread
             new Thread(() -> {
-                repository.saveWatchProgress(movieId, position, duration);
+                repository.saveWatchProgress(movieId, position, durationMs);
+                
+                // 如果电影的时长信息缺失，或者不准确，更新它（毫秒转分钟）
+                if (movie != null && (movie.getDuration() <= 0)) {
+                    int durationMinutes = (int) (durationMs / (1000 * 60));
+                    if (durationMinutes > 0) {
+                        movie.setDuration(durationMinutes);
+                        repository.saveMovie(movie);
+                        Log.d(TAG, "Updated movie duration to: " + durationMinutes + " mins");
+                    }
+                }
             }).start();
         }
     }

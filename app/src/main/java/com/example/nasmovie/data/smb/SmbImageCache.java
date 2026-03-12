@@ -100,6 +100,15 @@ public class SmbImageCache {
      * @param callback 下载回调
      */
     public void downloadImageAsync(String smbPath, SmbConfig config, DownloadCallback callback) {
+        // 先检查本地缓存
+        String cachedPath = getCachedImagePath(smbPath);
+        if (cachedPath != null) {
+            if (callback != null) {
+                callback.onSuccess(cachedPath);
+            }
+            return;
+        }
+
         // 检查是否已经在下载中
         if (downloadingTasks.putIfAbsent(smbPath, true) != null) {
             Log.d(TAG, "Image already downloading: " + smbPath);

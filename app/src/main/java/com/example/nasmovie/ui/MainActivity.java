@@ -1,54 +1,34 @@
 package com.example.nasmovie.ui;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
-import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.fragment.app.Fragment;
 
-import com.example.nasmovie.NASMovieApp;
 import com.example.nasmovie.R;
-import com.example.nasmovie.data.db.SmbConfigDao;
-import com.example.nasmovie.data.model.Movie;
-import com.example.nasmovie.data.model.SmbConfig;
-import com.example.nasmovie.data.repository.MovieRepository;
-import com.example.nasmovie.service.ScanService;
-import com.example.nasmovie.ui.adapter.MovieAdapter;
-import com.google.android.material.button.MaterialButton;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 主界面 - 电影列表
+ * 主 Activity - 包含三个平级 Fragment
  */
-public class MainActivity extends AppCompatActivity implements
-    MovieAdapter.OnItemClickListener {
+public class MainActivity extends AppCompatActivity {
 
-    private Toolbar toolbar;
-    private RecyclerView recyclerView;
-    private View emptyView;
-    private MaterialButton btnScan;
-    private ProgressBar progressBar;
+    private BottomNavigationView bottomNavigation;
 
-    private MovieAdapter adapter;
-    private MovieRepository repository;
-    private SmbConfigDao smbConfigDao;
-    private ScanService scanService;
+    private HomeFragment homeFragment;
+    private FavoritesFragment favoritesFragment;
+    private SettingsFragment settingsFragment;
 
-    private List<Movie> allMovies = new ArrayList<>();
-    private String searchQuery = "";
+    private Fragment currentFragment;
+    private final List<Fragment> backStack = new ArrayList<>();
+
+    // 双击退出标志
+    private long lastBackPressTime = 0;
+    private static final long BACK_PRESS_INTERVAL = 2000; // 2 秒内再次按返回键退出
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,201 +36,153 @@ public class MainActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_main);
 
         initViews();
-        initData();
-        loadMovies();
+
+        // 如果是第一次启动，加载首页 Fragment
+        if (savedInstanceState == null) {
+            loadHomeFragment();
+        }
     }
 
     private void initViews() {
-        toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        bottomNavigation = findViewById(R.id.bottom_navigation);
 
-        recyclerView = findViewById(R.id.recycler_view);
-        emptyView = findViewById(R.id.empty_view);
-        btnScan = findViewById(R.id.btn_scan);
-        progressBar = findViewById(R.id.progress_bar);
-
-        // 设置RecyclerView
-        recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
-        adapter = new MovieAdapter();
-        adapter.setOnItemClickListener(this);
-        recyclerView.setAdapter(adapter);
-
-        // 扫描按钮
-        btnScan.setOnClickListener(v -> startScan());
-    }
-
-    private void initData() {
-        repository = new MovieRepository(this);
-        smbConfigDao = NASMovieApp.getInstance().getDatabase().smbConfigDao();
-        scanService = new ScanService(this);
-    }
-
-    private void loadMovies() {
-        progressBar.setVisibility(View.VISIBLE);
-        emptyView.setVisibility(View.GONE);
-
-        new Thread(() -> {
-            allMovies = repository.getAllMovies();
-            runOnUiThread(() -> {
-                progressBar.setVisibility(View.GONE);
-                updateMovieList();
-            });
-        }).start();
-    }
-
-    private void updateMovieList() {
-        new Thread(() -> {
-            List<Movie> movies;
-            if (TextUtils.isEmpty(searchQuery)) {
-                movies = allMovies;
-            } else {
-                movies = repository.searchMovies(searchQuery);
-            }
-
-            final List<Movie> finalMovies = movies;
-            runOnUiThread(() -> {
-                adapter.setMovies(finalMovies);
-
-                if (finalMovies.isEmpty()) {
-                    emptyView.setVisibility(View.VISIBLE);
-                    recyclerView.setVisibility(View.GONE);
-                } else {
-                    emptyView.setVisibility(View.GONE);
-                    recyclerView.setVisibility(View.VISIBLE);
-                }
-            });
-        }).start();
-    }
-
-    @Override
-    public void onItemClick(Movie movie) {
-        Intent intent = new Intent(this, DetailActivity.class);
-        intent.putExtra(DetailActivity.EXTRA_MOVIE_ID, movie.getId());
-        startActivity(intent);
-    }
-
-    private void startScan() {
-        new Thread(() -> {
-            List<SmbConfig> allServers = smbConfigDao.getAll();
-            runOnUiThread(() -> {
-                if (allServers.isEmpty()) {
-                    new AlertDialog.Builder(MainActivity.this)
-                        .setTitle(R.string.error_no_server)
-                        .setMessage("请先在设置中添加NAS服务器")
-                        .setPositiveButton(R.string.settings, (dialog, which) -> {
-                            startActivity(new Intent(MainActivity.this, SettingsActivity.class));
-                        })
-                        .setNegativeButton(R.string.cancel, null)
-                        .show();
-                    return;
-                }
-
-                startScanAllServers(allServers);
-            });
-        }).start();
-    }
-
-    private void startScanAllServers(List<SmbConfig> servers) {
-        progressBar.setVisibility(View.VISIBLE);
-
-        AtomicInteger completedCount = new AtomicInteger(0);
-        AtomicInteger totalAdded = new AtomicInteger(0);
-        AtomicInteger totalScanned = new AtomicInteger(0);
-        StringBuilder errorBuilder = new StringBuilder();
-        int serverCount = servers.size();
-
-        // 为每个服务器创建独立的 ScanService 实例，实现并行扫描
-        for (SmbConfig server : servers) {
-            ScanService serverScanService = new ScanService(this);
-            serverScanService.scanLibrary(server, new ScanService.ScanCallback() {
-                @Override
-                public void onStart() {
-                    // 多个服务器同时开始，不单独处理
-                }
-
-                @Override
-                public void onProgress(int current, int total, String currentPath) {
-                    // 可以显示进度
-                }
-
-                @Override
-                public void onComplete(int addedCount, int totalCount) {
-                    totalAdded.addAndGet(addedCount);
-                    totalScanned.addAndGet(totalCount);
-
-                    if (completedCount.incrementAndGet() == serverCount) {
-                        runOnUiThread(() -> {
-                            progressBar.setVisibility(View.GONE);
-                            String message = errorBuilder.length() > 0
-                                ? String.format("扫描完成，发现 %d 部电影\n%s", totalAdded.get(), errorBuilder.toString())
-                                : getString(R.string.scan_complete, totalAdded.get());
-                            Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
-                            loadMovies();
-                        });
-                    }
-                }
-
-                @Override
-                public void onError(String error) {
-                    errorBuilder.append(server.getName()).append(": ").append(error).append("\n");
-
-                    if (completedCount.incrementAndGet() == serverCount) {
-                        runOnUiThread(() -> {
-                            progressBar.setVisibility(View.GONE);
-                            String message = String.format("扫描完成，发现 %d 部电影\n%s", totalAdded.get(), errorBuilder.toString());
-                            Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
-                            loadMovies();
-                        });
-                    }
-                }
-            });
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-
-        // 搜索功能
-        MenuItem searchItem = menu.findItem(R.id.action_search);
-        SearchView searchView = (SearchView) searchItem.getActionView();
-        searchView.setQueryHint(getString(R.string.search_hint));
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                searchQuery = newText;
-                updateMovieList();
+        bottomNavigation.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_home) {
+                loadHomeFragment();
+                return true;
+            } else if (itemId == R.id.nav_favorites) {
+                loadFavoritesFragment();
+                return true;
+            } else if (itemId == R.id.nav_settings) {
+                loadSettingsFragment();
                 return true;
             }
+            return false;
         });
-
-        return true;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
+    private void loadHomeFragment() {
+        if (homeFragment == null) {
+            homeFragment = new HomeFragment();
+        }
+        loadFragment(homeFragment, "home", false);
+    }
 
-        if (id == R.id.action_scan) {
-            startScan();
-            return true;
-        } else if (id == R.id.action_settings) {
-            startActivity(new Intent(this, SettingsActivity.class));
-            return true;
+    private void loadFavoritesFragment() {
+        if (favoritesFragment == null) {
+            favoritesFragment = new FavoritesFragment();
+        }
+        loadFragment(favoritesFragment, "favorites", false);
+    }
+
+    private void loadSettingsFragment() {
+        if (settingsFragment == null) {
+            settingsFragment = new SettingsFragment();
+        }
+        loadFragment(settingsFragment, "settings", false);
+    }
+
+    public void switchToSettings() {
+        bottomNavigation.setSelectedItemId(R.id.nav_settings);
+    }
+
+    public void openDetail(String movieId) {
+        DetailFragment detailFragment = DetailFragment.newInstance(movieId);
+        loadFragment(detailFragment, "detail", true);
+    }
+
+    public void openSearch() {
+        SearchFragment searchFragment = new SearchFragment();
+        loadFragment(searchFragment, "search", true);
+    }
+
+    public void openServerManage() {
+        ServerManageFragment serverManageFragment = new ServerManageFragment();
+        loadFragment(serverManageFragment, "server_manage", true);
+    }
+
+    public void openServerEdit(String serverId) {
+        ServerEditFragment serverEditFragment = ServerEditFragment.newInstance(serverId);
+        loadFragment(serverEditFragment, "server_edit", true);
+    }
+
+    public void scanMedia() {
+        if (homeFragment == null) {
+            homeFragment = new HomeFragment();
+        }
+        loadFragment(homeFragment, "home", false);
+    }
+
+    private void loadFragment(Fragment fragment, String tag, boolean addToBack) {
+        if (currentFragment == fragment) {
+            return;
         }
 
-        return super.onOptionsItemSelected(item);
+        if (addToBack) {
+            // 保存当前 Fragment 作为回退目标
+            backStack.add(currentFragment);
+            // 隐藏底部导航
+            bottomNavigation.setVisibility(android.view.View.GONE);
+        } else {
+            backStack.clear();
+            // 显示底部导航
+            bottomNavigation.setVisibility(android.view.View.VISIBLE);
+        }
+
+        getSupportFragmentManager()
+            .beginTransaction()
+            .replace(R.id.fragment_container, fragment, tag)
+            .commit();
+
+        currentFragment = fragment;
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        // 刷新列表
-        loadMovies();
+    public void onBackPressed() {
+        // 首先尝试让当前 Fragment 拦截返回事件
+        if (currentFragment instanceof IBackInterceptor) {
+            if (((IBackInterceptor) currentFragment).onBackPressed()) {
+                return; // 被拦截了
+            }
+        }
+        performRealBack();
+    }
+
+    /**
+     * 执行真正的返回逻辑（跳过拦截器，供 Fragment 在确认后调用）
+     */
+    public void performRealBack() {
+        if (!backStack.isEmpty()) {
+            // 先获取要回退到的 Fragment（栈顶元素）
+            Fragment targetFragment = backStack.get(backStack.size() - 1);
+
+            // 移除栈顶元素
+            backStack.remove(backStack.size() - 1);
+
+            // 回退到目标 Fragment
+            getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, targetFragment)
+                .commit();
+            currentFragment = targetFragment;
+
+            // 如果回退到的是三个主 Tab 之一，显示底部导航
+            if (targetFragment == homeFragment || targetFragment == favoritesFragment || targetFragment == settingsFragment) {
+                bottomNavigation.setVisibility(android.view.View.VISIBLE);
+            }
+        } else {
+            // 回退栈为空，说明在三个主 Tab 页面（首页、收藏、设置）
+            // 使用双击退出逻辑
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastBackPressTime < BACK_PRESS_INTERVAL) {
+                // 2 秒内再次按返回键，退出应用
+                super.onBackPressed();
+            } else {
+                // 第一次按返回键，显示提示
+                Toast.makeText(this, "再按一次退出应用", Toast.LENGTH_SHORT).show();
+                lastBackPressTime = currentTime;
+            }
+        }
     }
 }
