@@ -28,6 +28,7 @@ public class LockActivity extends AppCompatActivity implements View.OnClickListe
     private TextView tvTitle;
     private TextView tvSubtitle;
     private TextView tvError;
+    private ImageView ivLockIcon;
     private View[] dotViews;
     private List<String> passwordDigits = new ArrayList<>();
 
@@ -35,6 +36,7 @@ public class LockActivity extends AppCompatActivity implements View.OnClickListe
     private boolean isSettingPassword = false;
     private boolean isConfirmingPassword = false;
     private String tempPassword = "";
+    private boolean isUnlocking = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +62,7 @@ public class LockActivity extends AppCompatActivity implements View.OnClickListe
         tvTitle = findViewById(R.id.tv_lock_title);
         tvSubtitle = findViewById(R.id.tv_lock_subtitle);
         tvError = findViewById(R.id.tv_lock_error);
+        ivLockIcon = findViewById(R.id.iv_lock_icon);
 
         // 密码圆点指示器
         dotViews = new View[PASSWORD_LENGTH];
@@ -82,6 +85,7 @@ public class LockActivity extends AppCompatActivity implements View.OnClickListe
 
         // 长按删除清空
         findViewById(R.id.btn_delete).setOnLongClickListener(v -> {
+            if (isUnlocking) return true;
             clearPassword();
             return true;
         });
@@ -121,6 +125,9 @@ public class LockActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void addDigit(String digit) {
+        // 检查是否正在开锁动画中
+        if (isUnlocking) return;
+
         // 检查是否需要延迟
         if (!isSettingPassword && preferenceManager.isLockDelayRequired()) {
             long remaining = preferenceManager.getLockRemainingDelayTime() / 1000;
@@ -140,6 +147,7 @@ public class LockActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void onDeleteClick() {
+        if (isUnlocking) return;
         if (!passwordDigits.isEmpty()) {
             passwordDigits.remove(passwordDigits.size() - 1);
             updateDots();
@@ -148,6 +156,7 @@ public class LockActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void clearPassword() {
+        if (isUnlocking) return;
         passwordDigits.clear();
         updateDots();
         tvError.setVisibility(View.GONE);
@@ -184,13 +193,8 @@ public class LockActivity extends AppCompatActivity implements View.OnClickListe
         } else {
             // 确认密码
             if (password.equals(tempPassword)) {
-                // 密码设置成功
-                preferenceManager.setLockPassword(password);
-                preferenceManager.setLockEnabled(true);
-                preferenceManager.clearLockErrorCount();
-                setResult(RESULT_OK); // 设置成功结果
-                Toast.makeText(this, "密码设置成功", Toast.LENGTH_SHORT).show();
-                finish();
+                // 密码设置成功，播放开锁动画
+                playUnlockAnimationForSetup();
             } else {
                 // 两次输入不一致
                 showError("两次输入的密码不一致，请重新设置");
@@ -205,10 +209,8 @@ public class LockActivity extends AppCompatActivity implements View.OnClickListe
 
     private void handleVerifyPassword(String password) {
         if (preferenceManager.verifyPassword(password)) {
-            // 验证成功
-            preferenceManager.clearLockErrorCount();
-            preferenceManager.setShouldShowLock(false);
-            finish();
+            // 验证成功，播放开锁动画
+            playUnlockAnimation();
         } else {
             // 验证失败
             preferenceManager.incrementLockErrorCount();
@@ -228,6 +230,113 @@ public class LockActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    private void playUnlockAnimation() {
+        if (isUnlocking) return;
+        isUnlocking = true;
+
+        // 禁用数字键盘
+        setKeypadEnabled(false);
+
+        // 更新锁图标为开锁状态
+        ivLockIcon.setImageResource(R.drawable.ic_lock_open);
+        ivLockIcon.setColorFilter(android.graphics.Color.parseColor("#4CAF50"));
+
+        // 更新标题文字和颜色（验证成功）
+        tvTitle.setText("解锁成功");
+        tvTitle.setTextColor(android.graphics.Color.parseColor("#4CAF50"));
+        tvSubtitle.setText("正在进入...");
+
+        // 播放开锁动画
+        android.view.animation.Animation animation = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.anim_lock_open);
+        animation.setAnimationListener(new android.view.animation.Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(android.view.animation.Animation animation) {}
+
+            @Override
+            public void onAnimationEnd(android.view.animation.Animation animation) {
+                // 动画结束后进入APP
+                enterApp();
+            }
+
+            @Override
+            public void onAnimationRepeat(android.view.animation.Animation animation) {}
+        });
+        ivLockIcon.startAnimation(animation);
+
+        // 同时淡出其他UI元素（隐藏数字键盘区域）
+        ((android.view.View) findViewById(R.id.btn_0).getParent()).animate().alpha(0f).setDuration(300).start();
+        tvTitle.animate().alpha(0f).setDuration(300).start();
+        tvSubtitle.animate().alpha(0f).setDuration(300).start();
+        tvError.animate().alpha(0f).setDuration(300).start();
+        for (View dot : dotViews) {
+            dot.animate().alpha(0f).setDuration(300).start();
+        }
+    }
+
+    private void enterApp() {
+        // 验证成功
+        preferenceManager.clearLockErrorCount();
+        preferenceManager.setShouldShowLock(false);
+        finish();
+    }
+
+    private void playUnlockAnimationForSetup() {
+        if (isUnlocking) return;
+        isUnlocking = true;
+
+        // 禁用数字键盘
+        setKeypadEnabled(false);
+
+        // 更新标题和副标题
+        tvTitle.setText("密码设置成功");
+        tvSubtitle.setText("正在进入...");
+        tvTitle.setTextColor(android.graphics.Color.parseColor("#4CAF50"));
+        tvError.setVisibility(View.GONE);
+
+        // 更新锁图标为开锁状态
+        ivLockIcon.setImageResource(R.drawable.ic_lock_open);
+        ivLockIcon.setColorFilter(android.graphics.Color.parseColor("#4CAF50"));
+
+        // 播放开锁动画
+        android.view.animation.Animation animation = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.anim_lock_open);
+        animation.setAnimationListener(new android.view.animation.Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(android.view.animation.Animation animation) {}
+
+            @Override
+            public void onAnimationEnd(android.view.animation.Animation animation) {
+                // 动画结束后保存密码并返回
+                preferenceManager.setLockPassword(tempPassword);
+                preferenceManager.setLockEnabled(true);
+                preferenceManager.clearLockErrorCount();
+                setResult(RESULT_OK);
+                finish();
+            }
+
+            @Override
+            public void onAnimationRepeat(android.view.animation.Animation animation) {}
+        });
+        ivLockIcon.startAnimation(animation);
+
+        // 同时淡出其他UI元素（隐藏数字键盘区域）
+        ((android.view.View) findViewById(R.id.btn_0).getParent()).animate().alpha(0f).setDuration(300).start();
+        tvTitle.animate().alpha(0f).setDuration(300).start();
+        tvSubtitle.animate().alpha(0f).setDuration(300).start();
+        for (View dot : dotViews) {
+            dot.animate().alpha(0f).setDuration(300).start();
+        }
+    }
+
+    private void setKeypadEnabled(boolean enabled) {
+        int[] numberIds = {
+                R.id.btn_0, R.id.btn_1, R.id.btn_2, R.id.btn_3, R.id.btn_4,
+                R.id.btn_5, R.id.btn_6, R.id.btn_7, R.id.btn_8, R.id.btn_9, R.id.btn_delete
+        };
+        for (int id : numberIds) {
+            findViewById(id).setEnabled(enabled);
+        }
+    }
+
     private void showError(String message) {
         tvError.setText(message);
         tvError.setVisibility(View.VISIBLE);
@@ -243,6 +352,9 @@ public class LockActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
+            // 动画播放期间禁用返回键
+            if (isUnlocking) return true;
+
             if (isSettingPassword) {
                 // 设置密码模式，返回即取消
                 finish();

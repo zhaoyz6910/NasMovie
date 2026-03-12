@@ -92,8 +92,7 @@
             android:layout_height="56dp"
             android:text="扫描媒体库"
             android:textAllCaps="false"
-            android:textSize="17sp"
-            android:textStyle="bold"
+            android:textSize="18sp"
             app:cornerRadius="12dp"
             app:backgroundTint="@color/iosBlue" />
 

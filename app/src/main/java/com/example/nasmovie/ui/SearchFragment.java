@@ -84,6 +84,9 @@ public class SearchFragment extends Fragment implements
         AppCompatActivity activity = (AppCompatActivity) getActivity();
         if (activity != null) {
             activity.setSupportActionBar(toolbar.getToolbar());
+            if (activity.getSupportActionBar() != null) {
+                activity.getSupportActionBar().setDisplayShowTitleEnabled(false);
+            }
         }
 
         // 设置标题和返回按钮
@@ -246,6 +249,7 @@ public class SearchFragment extends Fragment implements
     @Override
     public void onResume() {
         super.onResume();
+        // 刷新搜索历史
         setupSearchHistory();
     }
 

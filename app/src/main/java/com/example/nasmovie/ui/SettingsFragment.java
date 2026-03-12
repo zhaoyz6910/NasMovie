@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -18,7 +17,7 @@ import com.example.nasmovie.R;
 import com.example.nasmovie.util.PreferenceManager;
 
 /**
- * 设置 Fragment
+ * 设置 Fragment - iOS 风格复刻版
  */
 public class SettingsFragment extends Fragment {
 
@@ -26,9 +25,10 @@ public class SettingsFragment extends Fragment {
     private LinearLayout itemClearCache;
     private LinearLayout itemAbout;
     private LinearLayout itemLockSettings;
+    private View cardLockPassword;
     private LinearLayout itemLockPassword;
-    private Switch switchLock;
-    private TextView tvLockStatus;
+    private com.google.android.material.switchmaterial.SwitchMaterial switchLock;
+    private com.example.nasmovie.view.NasToolbar toolbar;
 
     private PreferenceManager preferenceManager;
 
@@ -45,13 +45,20 @@ public class SettingsFragment extends Fragment {
     }
 
     private void initViews(View view) {
+        toolbar = view.findViewById(R.id.toolbar);
         itemServerManage = view.findViewById(R.id.item_server_manage);
         itemClearCache = view.findViewById(R.id.item_clear_cache);
         itemAbout = view.findViewById(R.id.item_about);
         itemLockSettings = view.findViewById(R.id.item_lock_settings);
+        cardLockPassword = view.findViewById(R.id.card_lock_password);
         itemLockPassword = view.findViewById(R.id.item_lock_password);
         switchLock = view.findViewById(R.id.switch_lock);
-        tvLockStatus = view.findViewById(R.id.tv_lock_status);
+
+        // 设置 Toolbar
+        if (toolbar != null) {
+            toolbar.setTitle(R.string.settings);
+            toolbar.setShowBack(false);
+        }
 
         itemServerManage.setOnClickListener(v -> {
             if (getActivity() instanceof MainActivity) {
@@ -64,7 +71,6 @@ public class SettingsFragment extends Fragment {
         itemAbout.setOnClickListener(v -> showAboutDialog());
 
         itemLockSettings.setOnClickListener(v -> toggleLock());
-        switchLock.setOnClickListener(v -> toggleLock());
         itemLockPassword.setOnClickListener(v -> changePassword());
     }
 
@@ -74,37 +80,81 @@ public class SettingsFragment extends Fragment {
     }
 
     private void clearCache() {
-        new AlertDialog.Builder(getContext())
-            .setTitle(R.string.clear_cache)
-            .setMessage("确定要清除缓存吗？")
-            .setPositiveButton(R.string.confirm, (dialog, which) -> {
-                new Thread(() -> {
+        showCustomDialog("清除缓存", "确定要清除所有图片缓存吗？", "确定", "取消", () -> {
+            new Thread(() -> {
+                // 执行清理逻辑
+                com.example.nasmovie.NASMovieApp.getInstance().getImageCache().clearCache();
+                if (isAdded() && getContext() != null) {
                     requireActivity().runOnUiThread(() -> {
                         android.widget.Toast.makeText(getContext(), "缓存已清除", android.widget.Toast.LENGTH_SHORT).show();
                     });
-                }).start();
-            })
-            .setNegativeButton(R.string.cancel, null)
-            .show();
+                }
+            }).start();
+        });
     }
 
     private void showAboutDialog() {
-        new AlertDialog.Builder(getContext())
-            .setTitle(R.string.about)
-            .setMessage("NAS 影视库 v1.0\n\n一款基于 SMB 协议的 NAS 影视管理播放应用")
-            .setPositiveButton(R.string.confirm, null)
-            .show();
+        showCustomDialog("关于", "NAS 影视库 v1.0\n一款基于 SMB 协议的 NAS 影视管理播放应用", "确定", null, null);
+    }
+
+    /**
+     * 显示通用自定义样式的对话框
+     */
+    private void showCustomDialog(String title, String message, String positiveText, String negativeText, Runnable onPositive) {
+        if (getContext() == null) return;
+        
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_confirm_exit, null);
+        android.app.Dialog dialog = new android.app.Dialog(requireContext());
+        dialog.setContentView(dialogView);
+        
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+            
+            // 固定弹窗宽度 (320dp)
+            int width = (int) (320 * getResources().getDisplayMetrics().density);
+            dialog.getWindow().setLayout(width, android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
+
+            android.view.WindowManager.LayoutParams lp = dialog.getWindow().getAttributes();
+            lp.dimAmount = 0.4f;
+            dialog.getWindow().setAttributes(lp);
+        }
+
+        TextView tvTitle = dialogView.findViewById(R.id.tv_dialog_title);
+        TextView tvMessage = dialogView.findViewById(R.id.tv_dialog_message);
+        TextView btnPositive = dialogView.findViewById(R.id.btn_positive);
+        TextView btnNegative = dialogView.findViewById(R.id.btn_negative);
+
+        tvTitle.setText(title);
+        tvMessage.setText(message);
+        
+        if (positiveText != null) {
+            btnPositive.setText(positiveText);
+            btnPositive.setOnClickListener(v -> {
+                dialog.dismiss();
+                if (onPositive != null) onPositive.run();
+            });
+        } else {
+            btnPositive.setVisibility(View.GONE);
+        }
+
+        if (negativeText != null) {
+            btnNegative.setText(negativeText);
+            btnNegative.setOnClickListener(v -> dialog.dismiss());
+        } else {
+            btnNegative.setVisibility(View.GONE);
+        }
+
+        dialog.show();
     }
 
     private void updateLockDisplay() {
         boolean isLockEnabled = preferenceManager.isLockEnabled();
         switchLock.setChecked(isLockEnabled);
-        tvLockStatus.setText(isLockEnabled ? "已开启" : "已关闭");
-
+        
         if (isLockEnabled) {
-            itemLockPassword.setVisibility(View.VISIBLE);
+            if (cardLockPassword != null) cardLockPassword.setVisibility(View.VISIBLE);
         } else {
-            itemLockPassword.setVisibility(View.GONE);
+            if (cardLockPassword != null) cardLockPassword.setVisibility(View.GONE);
         }
     }
 
@@ -112,20 +162,14 @@ public class SettingsFragment extends Fragment {
         boolean isLockEnabled = preferenceManager.isLockEnabled();
 
         if (isLockEnabled) {
-            new AlertDialog.Builder(getContext())
-                .setTitle("关闭应用锁")
-                .setMessage("确定要关闭应用锁吗？")
-                .setPositiveButton(R.string.confirm, (dialog, which) -> {
-                    preferenceManager.setLockEnabled(false);
-                    preferenceManager.setLockPassword("");
-                    updateLockDisplay();
-                    android.widget.Toast.makeText(getContext(), "应用锁已关闭", android.widget.Toast.LENGTH_SHORT).show();
-                })
-                .setNegativeButton(R.string.cancel, (dialog, which) -> {
-                    switchLock.setChecked(true);
-                })
-                .setOnCancelListener(dialog -> switchLock.setChecked(true))
-                .show();
+            showCustomDialog("关闭应用锁", "确定要关闭应用锁吗？", "确定", "取消", () -> {
+                preferenceManager.setLockEnabled(false);
+                preferenceManager.setLockPassword("");
+                updateLockDisplay();
+                android.widget.Toast.makeText(getContext(), "应用锁已关闭", android.widget.Toast.LENGTH_SHORT).show();
+            });
+            // 确保在弹窗出现时 Switch 状态保持开启
+            switchLock.setChecked(true);
         } else {
             Intent intent = new Intent(getContext(), LockActivity.class);
             intent.putExtra("setting_password", true);

@@ -5,6 +5,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.example.nasmovie.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -22,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
     private HomeFragment homeFragment;
     private FavoritesFragment favoritesFragment;
     private SettingsFragment settingsFragment;
+    private SearchFragment searchFragment;
 
     private Fragment currentFragment;
     private final List<Fragment> backStack = new ArrayList<>();
@@ -66,21 +68,47 @@ public class MainActivity extends AppCompatActivity {
         if (homeFragment == null) {
             homeFragment = new HomeFragment();
         }
-        loadFragment(homeFragment, "home", false);
+        switchTabFragment(homeFragment, "home");
     }
 
     private void loadFavoritesFragment() {
         if (favoritesFragment == null) {
             favoritesFragment = new FavoritesFragment();
         }
-        loadFragment(favoritesFragment, "favorites", false);
+        switchTabFragment(favoritesFragment, "favorites");
     }
 
     private void loadSettingsFragment() {
         if (settingsFragment == null) {
             settingsFragment = new SettingsFragment();
         }
-        loadFragment(settingsFragment, "settings", false);
+        switchTabFragment(settingsFragment, "settings");
+    }
+
+    private void switchTabFragment(Fragment fragment, String tag) {
+        if (currentFragment == fragment) {
+            return;
+        }
+
+        backStack.clear();
+        bottomNavigation.setVisibility(android.view.View.VISIBLE);
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
+
+        // 隐藏当前 Fragment
+        if (currentFragment != null) {
+            transaction.hide(currentFragment);
+        }
+
+        // 显示或添加目标 Fragment
+        if (!fragment.isAdded()) {
+            transaction.add(R.id.fragment_container, fragment, tag);
+        }
+        transaction.show(fragment);
+
+        transaction.commit();
+        currentFragment = fragment;
     }
 
     public void switchToSettings() {
@@ -93,7 +121,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void openSearch() {
-        SearchFragment searchFragment = new SearchFragment();
+        if (searchFragment == null) {
+            searchFragment = new SearchFragment();
+        }
         loadFragment(searchFragment, "search", true);
     }
 
@@ -119,22 +149,42 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
         if (addToBack) {
             // 保存当前 Fragment 作为回退目标
             backStack.add(currentFragment);
             // 隐藏底部导航
             bottomNavigation.setVisibility(android.view.View.GONE);
+            // 隐藏当前 Fragment，而不是销毁
+            if (currentFragment != null) {
+                transaction.hide(currentFragment);
+            }
+            // 添加新 Fragment
+            if (!fragment.isAdded()) {
+                transaction.add(R.id.fragment_container, fragment, tag);
+            }
+            transaction.show(fragment);
+            // 添加转场动画
+            transaction.setCustomAnimations(
+                R.anim.slide_in_right,
+                R.anim.slide_out_left,
+                R.anim.slide_in_left,
+                R.anim.slide_out_right
+            );
         } else {
             backStack.clear();
             // 显示底部导航
             bottomNavigation.setVisibility(android.view.View.VISIBLE);
+            // Tab 切换：使用 replace
+            transaction.replace(R.id.fragment_container, fragment, tag);
+            transaction.setCustomAnimations(
+                R.anim.fade_in,
+                R.anim.fade_out
+            );
         }
 
-        getSupportFragmentManager()
-            .beginTransaction()
-            .replace(R.id.fragment_container, fragment, tag)
-            .commit();
-
+        transaction.commit();
         currentFragment = fragment;
     }
 
@@ -160,11 +210,19 @@ public class MainActivity extends AppCompatActivity {
             // 移除栈顶元素
             backStack.remove(backStack.size() - 1);
 
-            // 回退到目标 Fragment
-            getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, targetFragment)
-                .commit();
+            // 隐藏当前 Fragment，显示目标 Fragment
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.setCustomAnimations(
+                R.anim.slide_in_left,
+                R.anim.slide_out_right
+            );
+            if (currentFragment != null) {
+                transaction.hide(currentFragment);
+            }
+            if (targetFragment != null) {
+                transaction.show(targetFragment);
+            }
+            transaction.commit();
             currentFragment = targetFragment;
 
             // 如果回退到的是三个主 Tab 之一，显示底部导航

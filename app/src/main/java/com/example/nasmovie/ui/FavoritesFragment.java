@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -34,6 +35,7 @@ public class FavoritesFragment extends Fragment implements
         FavoriteAdapter.OnMovieClickListener,
         FavoriteAdapter.OnMovieLongClickListener {
 
+    private com.example.nasmovie.view.NasToolbar toolbar;
     private RecyclerView recyclerView;
     private LinearLayout emptyView;
     private View bottomActions;
@@ -57,11 +59,25 @@ public class FavoritesFragment extends Fragment implements
     }
 
     private void initViews(View view) {
+        toolbar = view.findViewById(R.id.toolbar);
         recyclerView = view.findViewById(R.id.recycler_view_favorites);
         emptyView = view.findViewById(R.id.empty_view);
         bottomActions = view.findViewById(R.id.bottom_actions);
         btnDelete = view.findViewById(R.id.btn_delete);
         etSearch = view.findViewById(R.id.et_search);
+
+        // 设置 Toolbar
+        if (toolbar != null) {
+            toolbar.setTitle("我的收藏");
+            toolbar.setShowBack(false);
+            AppCompatActivity activity = (AppCompatActivity) getActivity();
+            if (activity != null) {
+                activity.setSupportActionBar(toolbar.getToolbar());
+                if (activity.getSupportActionBar() != null) {
+                    activity.getSupportActionBar().setDisplayShowTitleEnabled(false);
+                }
+            }
+        }
 
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
         adapter = new FavoriteAdapter();

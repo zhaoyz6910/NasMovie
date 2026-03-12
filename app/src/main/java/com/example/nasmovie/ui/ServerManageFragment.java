@@ -68,6 +68,9 @@ public class ServerManageFragment extends Fragment implements
         // 设置 Toolbar
         if (getActivity() != null) {
             ((androidx.appcompat.app.AppCompatActivity) getActivity()).setSupportActionBar(toolbar.getToolbar());
+            if (((androidx.appcompat.app.AppCompatActivity) getActivity()).getSupportActionBar() != null) {
+                ((androidx.appcompat.app.AppCompatActivity) getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
+            }
         }
 
         // 设置标题和返回按钮
@@ -255,6 +258,11 @@ public class ServerManageFragment extends Fragment implements
         // 设置对话框背景透明，以便显示自定义圆角背景
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+            
+            // 固定弹窗宽度 (320dp)
+            int width = (int) (320 * getResources().getDisplayMetrics().density);
+            dialog.getWindow().setLayout(width, android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
+
             // 设置背景遮罩 alpha
             android.view.WindowManager.LayoutParams lp = dialog.getWindow().getAttributes();
             lp.dimAmount = 0.4f; // 对应 bg-black/40

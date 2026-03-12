@@ -71,6 +71,13 @@ public class ServerEditFragment extends Fragment {
         btnSave = view.findViewById(R.id.btn_save);
 
         toolbar.setShowBack(true);
+        if (getActivity() instanceof androidx.appcompat.app.AppCompatActivity) {
+            androidx.appcompat.app.AppCompatActivity activity = (androidx.appcompat.app.AppCompatActivity) getActivity();
+            activity.setSupportActionBar(toolbar.getToolbar());
+            if (activity.getSupportActionBar() != null) {
+                activity.getSupportActionBar().setDisplayShowTitleEnabled(false);
+            }
+        }
         toolbar.setOnBackClickListener(() -> {
             if (getActivity() instanceof MainActivity) {
                 ((MainActivity) getActivity()).onBackPressed();

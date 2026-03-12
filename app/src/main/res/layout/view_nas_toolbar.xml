@@ -4,55 +4,61 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardElevation="0dp">
+    app:cardElevation="0dp"
+    app:cardBackgroundColor="@android:color/transparent">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/inner_toolbar"            android:layout_width="match_parent"
+        <!-- 使用 FrameLayout 作为根容器以实现绝对居中 -->
+        <FrameLayout
+            android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/colorBackground"
-            app:contentInsetStart="0dp"
-            app:contentInsetStartWithNavigation="0dp">
+            android:background="@color/colorBackground">
 
-            <FrameLayout
+            <!-- 真正的 Toolbar 用于承载菜单等功能（如果有的话），不放标题 -->
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/inner_toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                app:contentInsetStart="0dp"
+                app:contentInsetEnd="0dp" />
 
-                <!-- 返回按钮 -->
-                <ImageView
-                    android:id="@+id/btn_back"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:padding="12dp"
-                    android:src="@drawable/ic_back"
-                    android:layout_gravity="start|center_vertical"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="返回"
-                    app:tint="@color/textPrimary" />
+            <!-- 返回按钮：固定在左侧，不影响居中逻辑 -->
+            <ImageView
+                android:id="@+id/btn_back"
+                android:layout_width="56dp"
+                android:layout_height="match_parent"
+                android:padding="14dp"
+                android:src="@drawable/ic_back"
+                android:layout_gravity="start|center_vertical"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="返回"
+                android:visibility="gone"
+                app:tint="@color/textPrimary" />
 
-                <!-- 标题 -->
-                <TextView
-                    android:id="@+id/tv_toolbar_title"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/textPrimary"
-                    android:gravity="center" />
+            <!-- 标题：绝对居中，相对于整个屏幕宽度 -->
+            <TextView
+                android:id="@+id/tv_toolbar_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginHorizontal="64dp"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/textPrimary"
+                android:maxLines="1"
+                android:ellipsize="end" />
 
-            </FrameLayout>
-
-        </androidx.appcompat.widget.Toolbar>
+        </FrameLayout>
 
         <!-- 分割线 -->
         <View
             android:id="@+id/divider"
             android:layout_width="match_parent"
-            android:layout_height="1dp"
+            android:layout_height="0.5dp"
             android:background="@color/divider"
             android:visibility="gone" />
 

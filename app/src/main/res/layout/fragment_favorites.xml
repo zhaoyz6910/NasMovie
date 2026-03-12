@@ -7,24 +7,12 @@
     android:orientation="vertical"
     android:background="@color/colorBackground">
 
-    <!-- Toolbar -->
-    <androidx.appcompat.widget.Toolbar
+    <!-- Header -->
+    <com.example.nasmovie.view.NasToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/colorBackground"
-        android:elevation="4dp">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="我的收藏"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="@color/textPrimary"
-            android:gravity="center" />
-
-    </androidx.appcompat.widget.Toolbar>
+        android:layout_height="wrap_content"
+        android:elevation="4dp" />
 
     <!-- 搜索栏 -->
     <androidx.cardview.widget.CardView

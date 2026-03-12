@@ -90,17 +90,19 @@ public class MovieCard extends FrameLayout {
     public void loadMovie(Movie movie, int progress) {
         if (movie == null) return;
 
-        // 使用 SmbImageLoader 加载海报，它会自动处理本地路径、SMB 下载 and 缓存
+        // 使用 SmbImageLoader 加载海报
         com.example.nasmovie.util.SmbImageLoader.loadPoster(getContext(), movie, ivPoster);
 
         // 设置标题
         tvTitle.setText(movie.getTitle());
 
-        // 设置评分
-        if (movie.getRating() > 0) {
+        // 处理评分 (使用 movie.getRating() 字段)
+        boolean hasRating = movie.getRating() > 0;
+        if (hasRating) {
             tvRating.setText(String.format("%.1f", movie.getRating()));
+            if (ratingBadge != null) ratingBadge.setVisibility(View.VISIBLE);
         } else {
-            tvRating.setText("N/A");
+            if (ratingBadge != null) ratingBadge.setVisibility(View.GONE);
         }
 
         // 设置年份
@@ -121,9 +123,10 @@ public class MovieCard extends FrameLayout {
             if (divider != null) divider.setVisibility(View.GONE);
         }
 
-        applyMode();
+        // 应用布局模式
+        applyMode(hasRating);
 
-        // 最后根据进度数据决定进度条显隐，这会覆盖 applyMode 中的默认设置
+        // 设置观看进度
         if (progressWatch != null) {
             if (progress >= 0 && progress < 100) {
                 progressWatch.setProgress(progress);
@@ -153,14 +156,15 @@ public class MovieCard extends FrameLayout {
      */
     public void setMode(CardMode mode) {
         this.currentMode = mode;
-        applyMode();
+        // 注意：这里由于没有实时 movie 数据，我们保守地尝试刷新
+        // 实际上大部分情况是通过 loadMovie 触发的
     }
 
-    private void applyMode() {
+    private void applyMode(boolean hasRating) {
         switch (currentMode) {
             case GRID:
                 // 网格模式：显示评分徽章、年份、时长
-                if (ratingBadge != null) ratingBadge.setVisibility(View.VISIBLE);
+                if (ratingBadge != null) ratingBadge.setVisibility(hasRating ? View.VISIBLE : View.GONE);
                 if (tvYear != null) tvYear.setVisibility(tvYear.getText().toString().isEmpty() ? View.GONE : View.VISIBLE);
                 if (tvDuration != null) tvDuration.setVisibility(tvDuration.getText().toString().isEmpty() ? View.GONE : View.VISIBLE);
                 if (divider != null) divider.setVisibility(View.VISIBLE);
@@ -177,7 +181,7 @@ public class MovieCard extends FrameLayout {
 
             case HORIZONTAL:
                 // 横向模式：显示评分徽章、标题
-                if (ratingBadge != null) ratingBadge.setVisibility(View.VISIBLE);
+                if (ratingBadge != null) ratingBadge.setVisibility(hasRating ? View.VISIBLE : View.GONE);
                 if (tvYear != null) tvYear.setVisibility(View.GONE);
                 if (tvDuration != null) tvDuration.setVisibility(View.GONE);
                 if (divider != null) divider.setVisibility(View.GONE);
@@ -185,8 +189,8 @@ public class MovieCard extends FrameLayout {
                 break;
 
             case FAVORITE:
-                // 收藏模式：显示评分、标题、选中状态
-                if (ratingBadge != null) ratingBadge.setVisibility(View.GONE);
+                // 收藏模式：显示评分徽章、标题、选中状态
+                if (ratingBadge != null) ratingBadge.setVisibility(hasRating ? View.VISIBLE : View.GONE);
                 if (tvYear != null) tvYear.setVisibility(View.GONE);
                 if (tvDuration != null) tvDuration.setVisibility(View.GONE);
                 if (divider != null) divider.setVisibility(View.GONE);
@@ -195,7 +199,7 @@ public class MovieCard extends FrameLayout {
 
             case SEARCH:
                 // 搜索模式：完整信息
-                if (ratingBadge != null) ratingBadge.setVisibility(View.VISIBLE);
+                if (ratingBadge != null) ratingBadge.setVisibility(hasRating ? View.VISIBLE : View.GONE);
                 if (tvYear != null) tvYear.setVisibility(tvYear.getText().toString().isEmpty() ? View.GONE : View.VISIBLE);
                 if (tvDuration != null) tvDuration.setVisibility(tvDuration.getText().toString().isEmpty() ? View.GONE : View.VISIBLE);
                 if (divider != null) divider.setVisibility(View.VISIBLE);

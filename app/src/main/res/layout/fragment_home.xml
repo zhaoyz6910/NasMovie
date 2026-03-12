@@ -15,34 +15,12 @@
         android:paddingTop="?attr/actionBarSize"
         android:paddingBottom="16dp" />
 
-    <!-- Toolbar - 置顶并显示在最上层 -->
-    <androidx.appcompat.widget.Toolbar
+    <!-- Header -->
+    <com.example.nasmovie.view.NasToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/colorBackground"
-        android:elevation="4dp">
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="首页"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="@color/textPrimary"
-                android:gravity="center"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </androidx.appcompat.widget.Toolbar>
+        android:layout_height="wrap_content"
+        android:elevation="4dp" />
 
     <!-- 搜索栏 - 作为 RecyclerView Header 一起滚动 -->
     <androidx.cardview.widget.CardView

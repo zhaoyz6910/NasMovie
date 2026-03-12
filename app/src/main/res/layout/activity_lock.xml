@@ -15,6 +15,7 @@
         android:layout_marginTop="80dp">
 
         <ImageView
+            android:id="@+id/iv_lock_icon"
             android:layout_width="64dp"
             android:layout_height="64dp"
             android:src="@drawable/ic_lock"

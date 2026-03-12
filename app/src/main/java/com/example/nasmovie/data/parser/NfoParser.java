@@ -32,6 +32,7 @@ public class NfoParser {
     private static final String TAG_YEAR = "year";
     private static final String TAG_PREMIERED = "premiered";
     private static final String TAG_RATING = "rating";
+    private static final String TAG_VALUE = "value";
     private static final String TAG_VOTES = "votes";
     private static final String TAG_MPAA = "mpaa";
     private static final String TAG_RUNTIME = "runtime";
@@ -194,8 +195,13 @@ public class NfoParser {
                 }
                 break;
             case TAG_RATING:
+            case TAG_VALUE:
                 try {
-                    metadata.setRating(Float.parseFloat(text));
+                    float val = Float.parseFloat(text);
+                    // 只有在当前评分为0，或者解析到的是有效非零评分时才更新
+                    if (val > 0 || metadata.getRating() == 0) {
+                        metadata.setRating(val);
+                    }
                 } catch (NumberFormatException ignored) {}
                 break;
             case TAG_VOTES:

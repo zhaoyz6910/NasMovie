@@ -4,273 +4,268 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorBackground">
+    android:background="@color/colorBackground"
+    android:overScrollMode="never"
+    android:scrollbars="none">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingBottom="100dp">
 
-        <!-- Toolbar -->
-        <androidx.appcompat.widget.Toolbar
+        <!-- Header -->
+        <com.example.nasmovie.view.NasToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/colorBackground"
-            android:elevation="4dp">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="@string/settings"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="@color/textPrimary"
-                android:gravity="center" />
-
-        </androidx.appcompat.widget.Toolbar>
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingHorizontal="16dp">
 
-            <!-- 服务器管理 -->
+            <!-- Server Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="服务器"
                 android:textSize="14sp"
-                android:textColor="@color/textSecondary"
-                android:textStyle="bold" />
+                android:textColor="#71717a"
+                android:layout_marginStart="4dp"
+                android:layout_marginBottom="12dp" />
 
-            <androidx.cardview.widget.CardView
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="0dp">
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/colorSurface"
+                android:layout_marginBottom="32dp">
 
                 <LinearLayout
+                    android:id="@+id/item_server_manage"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:layout_height="64dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
 
-                    <LinearLayout
-                        android:id="@+id/item_server_manage"
-                        android:layout_width="match_parent"
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_server"
+                        app:tint="@android:color/white" />
+
+                    <TextView
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="16dp"
-                        android:background="?attr/selectableItemBackground">
+                        android:layout_weight="1"
+                        android:layout_marginStart="16dp"
+                        android:text="@string/server_manage"
+                        android:textSize="18sp"
+                        android:textColor="@android:color/white" />
 
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_server"
-                            app:tint="@color/colorPrimary" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="16dp"
-                            android:text="@string/server_manage"
-                            android:textSize="16sp"
-                            android:textColor="@color/textPrimary" />
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_more"
-                            app:tint="@color/textHint" />
-
-                    </LinearLayout>
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_more_vert"
+                        app:tint="@android:color/white" />
 
                 </LinearLayout>
 
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
 
-            <!-- 安全 -->
+            <!-- Security Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
                 android:text="安全"
                 android:textSize="14sp"
-                android:textColor="@color/textSecondary"
-                android:textStyle="bold" />
+                android:textColor="#71717a"
+                android:layout_marginStart="4dp"
+                android:layout_marginBottom="12dp" />
 
-            <androidx.cardview.widget.CardView
+            <!-- App Lock Card -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="0dp">
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/colorSurface"
+                android:layout_marginBottom="12dp">
 
                 <LinearLayout
+                    android:id="@+id/item_lock_settings"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:layout_height="64dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
 
-                    <!-- 应用锁设置 -->
-                    <LinearLayout
-                        android:id="@+id/item_lock_settings"
-                        android:layout_width="match_parent"
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_lock"
+                        app:tint="@android:color/white" />
+
+                    <TextView
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="16dp"
-                        android:background="?attr/selectableItemBackground">
+                        android:layout_weight="1"
+                        android:layout_marginStart="16dp"
+                        android:text="应用锁"
+                        android:textSize="18sp"
+                        android:textColor="@android:color/white" />
 
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_lock"
-                            app:tint="@color/colorPrimary" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="16dp"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="应用锁"
-                                android:textSize="16sp"
-                                android:textColor="@color/textPrimary" />
-
-                            <TextView
-                                android:id="@+id/tv_lock_status"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="已关闭"
-                                android:textSize="12sp"
-                                android:textColor="@color/textSecondary" />
-
-                        </LinearLayout>
-
-                        <Switch
-                            android:id="@+id/switch_lock"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:clickable="false"
-                            android:focusable="false" />
-
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginStart="56dp"
-                        android:background="@color/divider" />
-
-                    <LinearLayout
-                        android:id="@+id/item_lock_password"
-                        android:layout_width="match_parent"
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switch_lock"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="16dp"
-                        android:background="?attr/selectableItemBackground"
-                        android:visibility="gone">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_settings"
-                            app:tint="@color/colorPrimary" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="16dp"
-                            android:text="修改密码"
-                            android:textSize="16sp"
-                            android:textColor="@color/textPrimary" />
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_more"
-                            app:tint="@color/textHint" />
-
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginStart="56dp"
-                        android:background="@color/divider" />
-
-                    <LinearLayout
-                        android:id="@+id/item_clear_cache"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="16dp"
-                        android:background="?attr/selectableItemBackground">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_remove"
-                            app:tint="@color/colorPrimary" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="16dp"
-                            android:text="@string/clear_cache"
-                            android:textSize="16sp"
-                            android:textColor="@color/textPrimary" />
-
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginStart="56dp"
-                        android:background="@color/divider" />
-
-                    <LinearLayout
-                        android:id="@+id/item_about"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="16dp"
-                        android:background="?attr/selectableItemBackground">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_info"
-                            app:tint="@color/colorPrimary" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="16dp"
-                            android:text="@string/about"
-                            android:textSize="16sp"
-                            android:textColor="@color/textPrimary" />
-
-                    </LinearLayout>
+                        app:switchMinWidth="51dp"
+                        android:thumb="@drawable/switch_thumb_ios"
+                        app:track="@drawable/switch_track_ios"
+                        app:useMaterialThemeColors="false"
+                        android:showText="false"
+                        android:clickable="false"
+                        android:focusable="false" />
 
                 </LinearLayout>
 
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Change Password Card (Dynamic) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_lock_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/colorSurface"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:id="@+id/item_lock_password"
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_settings"
+                        app:tint="@android:color/white" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="16dp"
+                        android:text="修改密码"
+                        android:textSize="18sp"
+                        android:textColor="@android:color/white" />
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_back"
+                        android:rotation="180"
+                        app:tint="@color/iosGray" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Clear Cache Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/colorSurface"
+                android:layout_marginBottom="12dp">
+
+                <LinearLayout
+                    android:id="@+id/item_clear_cache"
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_brush"
+                        app:tint="@android:color/white" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="16dp"
+                        android:text="@string/clear_cache"
+                        android:textSize="18sp"
+                        android:textColor="@android:color/white" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- About Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/colorSurface">
+
+                <LinearLayout
+                    android:id="@+id/item_about"
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_info"
+                        app:tint="@android:color/white" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="16dp"
+                        android:text="@string/about"
+                        android:textSize="18sp"
+                        android:textColor="@android:color/white" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
 

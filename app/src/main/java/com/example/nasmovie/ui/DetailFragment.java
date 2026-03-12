@@ -16,6 +16,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.example.nasmovie.R;
 import com.example.nasmovie.data.model.Movie;
 import com.example.nasmovie.data.model.WatchProgress;
@@ -56,6 +57,8 @@ public class DetailFragment extends Fragment {
     private Movie movie;
     private String movieId;
     private boolean isFavorite = false;
+    private View contentContainer;
+    private ProgressBar progressLoading;
 
     public static DetailFragment newInstance(String movieId) {
         DetailFragment fragment = new DetailFragment();
@@ -83,6 +86,8 @@ public class DetailFragment extends Fragment {
     }
 
     private void initViews(View view) {
+        progressLoading = view.findViewById(R.id.progress_loading);
+        contentContainer = view.findViewById(R.id.content_container);
         toolbar = view.findViewById(R.id.toolbar);
         ivPoster = view.findViewById(R.id.iv_poster);
         tvTitle = view.findViewById(R.id.tv_title);
@@ -103,6 +108,9 @@ public class DetailFragment extends Fragment {
         AppCompatActivity activity = (AppCompatActivity) getActivity();
         if (activity != null) {
             activity.setSupportActionBar(toolbar.getToolbar());
+            if (activity.getSupportActionBar() != null) {
+                activity.getSupportActionBar().setDisplayShowTitleEnabled(false);
+            }
         }
 
         // 设置标题和返回按钮
@@ -123,6 +131,10 @@ public class DetailFragment extends Fragment {
     }
 
     private void loadMovie() {
+        // 显示加载进度条，隐藏内容
+        progressLoading.setVisibility(View.VISIBLE);
+        contentContainer.setVisibility(View.GONE);
+
         new Thread(() -> {
             movie = repository.getMovieById(movieId);
             isFavorite = repository.isFavorite(movieId);
@@ -130,9 +142,20 @@ public class DetailFragment extends Fragment {
 
             requireActivity().runOnUiThread(() -> {
                 if (movie != null) {
+                    // 隐藏加载进度条
+                    progressLoading.setVisibility(View.GONE);
+
+                    // 显示内容（一次性渲染所有数据）
                     displayMovie();
                     displayProgress(progress);
                     updateFavoriteButton();
+
+                    contentContainer.setAlpha(0f);
+                    contentContainer.setVisibility(View.VISIBLE);
+                    contentContainer.animate()
+                        .alpha(1f)
+                        .setDuration(200)
+                        .start();
                 } else {
                     if (getActivity() instanceof MainActivity) {
                         ((MainActivity) getActivity()).onBackPressed();
@@ -202,6 +225,7 @@ public class DetailFragment extends Fragment {
                 .load(new File(localThumb))
                 .placeholder(R.drawable.bg_poster_placeholder)
                 .error(R.drawable.bg_poster_placeholder)
+                .transition(DrawableTransitionOptions.withCrossFade(300))
                 .into(ivPoster);
         } else if (movie.getThumbPath() != null && !movie.getThumbPath().isEmpty()) {
             SmbImageLoader.loadDetailPoster(requireContext(), movie, ivPoster);
@@ -210,12 +234,14 @@ public class DetailFragment extends Fragment {
                 .load(new File(localPoster))
                 .placeholder(R.drawable.bg_poster_placeholder)
                 .error(R.drawable.bg_poster_placeholder)
+                .transition(DrawableTransitionOptions.withCrossFade(300))
                 .into(ivPoster);
         } else if (movie.getPosterPath() != null && !movie.getPosterPath().isEmpty()) {
             SmbImageLoader.loadPoster(requireContext(), movie, ivPoster);
         } else {
             Glide.with(requireContext())
                 .load(R.drawable.bg_poster_placeholder)
+                .transition(DrawableTransitionOptions.withCrossFade(300))
                 .into(ivPoster);
         }
     }
@@ -233,12 +259,13 @@ public class DetailFragment extends Fragment {
     }
 
     private void updateFavoriteButton() {
-        if (isFavorite) {
+        if (btnFavorite != null) {
             btnFavorite.setIconResource(R.drawable.ic_favorite);
-            btnFavorite.setIconTintResource(android.R.color.white);
-        } else {
-            btnFavorite.setIconResource(R.drawable.ic_favorite_border);
-            btnFavorite.setIconTintResource(R.color.btnFavorite);
+            if (isFavorite) {
+                btnFavorite.setIconTintResource(R.color.iosBlue);
+            } else {
+                btnFavorite.setIconTintResource(R.color.iosGray);
+            }
         }
     }
 

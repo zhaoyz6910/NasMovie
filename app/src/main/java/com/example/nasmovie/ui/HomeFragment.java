@@ -42,13 +42,14 @@ public class HomeFragment extends Fragment implements
     private ProgressBar progressBar;
     private View emptyView;
     private View cardSearch;
-    private Toolbar toolbar;
+    private com.example.nasmovie.view.NasToolbar toolbar;
 
     private FeaturedMovieAdapter featuredAdapter;
     private MainContentAdapter mainContentAdapter;
 
     private MovieRepository repository;
     private List<Movie> allMovies = new ArrayList<>();
+    private boolean isDataLoaded = false;
 
     // 自动轮播相关
     private static final long AUTO_SLIDE_INTERVAL = 4000; // 4秒轮播一次
@@ -94,9 +95,16 @@ public class HomeFragment extends Fragment implements
         emptyView = view.findViewById(R.id.empty_view);
         cardSearch = view.findViewById(R.id.card_search);
 
-        AppCompatActivity activity = (AppCompatActivity) getActivity();
-        if (activity != null) {
-            activity.setSupportActionBar(toolbar);
+        if (toolbar != null) {
+            toolbar.setTitle(R.string.app_name);
+            toolbar.setShowBack(false);
+            AppCompatActivity activity = (AppCompatActivity) getActivity();
+            if (activity != null) {
+                activity.setSupportActionBar(toolbar.getToolbar());
+                if (activity.getSupportActionBar() != null) {
+                    activity.getSupportActionBar().setDisplayShowTitleEnabled(false);
+                }
+            }
         }
 
         featuredAdapter = new FeaturedMovieAdapter();
@@ -195,6 +203,8 @@ public class HomeFragment extends Fragment implements
                 } else {
                     showContent(featuredMovies, recentMovies, highRatedMovies, newestMovies);
                 }
+                // 标记数据已加载
+                isDataLoaded = true;
             });
         }).start();
     }
@@ -322,9 +332,12 @@ public class HomeFragment extends Fragment implements
     @Override
     public void onResume() {
         super.onResume();
-        loadMovies();
+        // 只有首次加载时才加载数据，返回时保留原有影片
+        if (!isDataLoaded) {
+            loadMovies();
+        }
         startAutoSlide();
-        
+
         // 当从其他页面切回时，强制 ViewPager2 重新布局以触发 PageTransformer
         if (viewPagerFeatured != null) {
             viewPagerFeatured.post(() -> {
