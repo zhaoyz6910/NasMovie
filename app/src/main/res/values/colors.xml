@@ -15,6 +15,31 @@
     <color name="textHint">#9E9E9E</color>
     <color name="white">#FFFFFF</color>
 
+    <!-- iOS 风格色彩 -->
+    <color name="iosBlue">#007AFF</color>
+    <color name="iosGray">#8E8E93</color>
+    <color name="iosProgressTrack">#E5E5E5</color>
+    <color name="iosDivider">#C6C6C8</color>
+
+    <!-- 按钮配色方案 -->
+    <color name="btnPlayStart">#1976D2</color>
+    <color name="btnPlayEnd">#1565C0</color>
+    <color name="btnPlayPressed">#0D47A1</color>
+    <color name="btnFavorite">#1976D2</color>
+    <color name="btnFavoriteBorder">#64B5F6</color>
+    <color name="btnPrimary">#1976D2</color>
+    <color name="btnPrimaryPressed">#1565C0</color>
+    <color name="btnSecondary">#F5F5F5</color>
+    <color name="btnSecondaryStroke">#E0E0E0</color>
+
+    <!-- 评分金色 -->
+    <color name="ratingGold">#FFD700</color>
+    <color name="ratingGoldDark">#B8860B</color>
+
+    <!-- 渐变遮罩 -->
+    <color name="gradientStart">#00000000</color>
+    <color name="gradientEnd">#CC000000</color>
+
     <!-- 其他 -->
     <color name="divider">#E0E0E0</color>
     <color name="ratingBackground">#1976D2</color>

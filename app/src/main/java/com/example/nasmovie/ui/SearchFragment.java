@@ -104,7 +104,6 @@ public class SearchFragment extends Fragment implements
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 3);
         recyclerViewResults.setLayoutManager(gridLayoutManager);
         recyclerViewResults.setAdapter(resultAdapter);
-        recyclerViewResults.setHasFixedSize(true);
 
         // 搜索输入监听
         editSearch.addTextChangedListener(new TextWatcher() {

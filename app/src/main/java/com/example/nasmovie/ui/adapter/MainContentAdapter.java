@@ -166,7 +166,6 @@ public class MainContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
             recyclerView.setLayoutManager(
                     new LinearLayoutManager(itemView.getContext(), LinearLayoutManager.HORIZONTAL, false));
-            recyclerView.setHasFixedSize(true);
             adapter = new HorizontalMovieAdapter();
             adapter.setOnMovieClickListener(movie -> {
                 if (listener != null) listener.onMovieClick(movie);
