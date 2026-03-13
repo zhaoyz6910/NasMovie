@@ -195,6 +195,14 @@ public class FavoritesFragment extends Fragment implements
     }
 
     @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            loadFavorites();
+        }
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         if (repository != null) {

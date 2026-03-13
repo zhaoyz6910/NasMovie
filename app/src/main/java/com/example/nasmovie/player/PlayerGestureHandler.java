@@ -83,8 +83,9 @@ public class PlayerGestureHandler extends GestureDetector.SimpleOnGestureListene
                 isGestureMoving = true;
                 if (startX < playerView.getWidth() / 2) {
                     // 左侧：亮度
+                    isGestureMoving = true;
                     currentGesture = GESTURE_BRIGHTNESS;
-                    currentBrightness = getCurrentBrightness();
+                    currentBrightness = getCurrentWindowBrightness();
                 } else {
                     // 右侧：音量
                     currentGesture = GESTURE_VOLUME;
@@ -130,6 +131,9 @@ public class PlayerGestureHandler extends GestureDetector.SimpleOnGestureListene
         // 设置亮度
         setBrightness(newBrightness);
 
+        // 更新当前亮度值，避免下次计算时基准值不变导致跳动
+        currentBrightness = newBrightness;
+
         // 显示亮度提示
         if (callback != null) {
             int percent = newBrightness * 100 / 255;
@@ -149,6 +153,9 @@ public class PlayerGestureHandler extends GestureDetector.SimpleOnGestureListene
 
         // 设置音量
         audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, 0);
+
+        // 更新当前音量值，避免下次计算时基准值不变导致跳动
+        currentVolume = newVolume;
 
         // 显示音量提示
         if (callback != null) {
@@ -194,6 +201,22 @@ public class PlayerGestureHandler extends GestureDetector.SimpleOnGestureListene
         }
 
         currentGesture = GESTURE_NONE;
+    }
+
+    /**
+     * 获取当前窗口亮度（应用设置的亮度）
+     */
+    private int getCurrentWindowBrightness() {
+        try {
+            float brightness = ((android.app.Activity) context).getWindow().getAttributes().screenBrightness;
+            if (brightness >= 0) {
+                return (int) (brightness * 255);
+            }
+        } catch (Exception e) {
+            // 忽略
+        }
+        // 如果窗口亮度未设置，返回系统亮度
+        return getCurrentBrightness();
     }
 
     /**

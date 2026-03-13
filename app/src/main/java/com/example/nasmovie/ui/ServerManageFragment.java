@@ -83,6 +83,8 @@ public class ServerManageFragment extends Fragment implements
         });
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        // 禁用 item 动画，避免扫描时进度更新导致闪烁
+        recyclerView.setItemAnimator(null);
         adapter = new ServerAdapter();
         adapter.setOnItemClickListener(this);
         adapter.setOnItemLongClickListener(this);

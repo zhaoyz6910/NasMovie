@@ -16,6 +16,7 @@ import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.nasmovie.R;
@@ -39,6 +40,7 @@ public class HomeFragment extends Fragment implements
 
     private ViewPager2 viewPagerFeatured;
     private RecyclerView recyclerViewMain;
+    private SwipeRefreshLayout swipeRefreshLayout;
     private ProgressBar progressBar;
     private View emptyView;
     private View cardSearch;
@@ -91,6 +93,7 @@ public class HomeFragment extends Fragment implements
         toolbar = view.findViewById(R.id.toolbar);
         viewPagerFeatured = view.findViewById(R.id.view_pager_featured);
         recyclerViewMain = view.findViewById(R.id.recycler_view_main);
+        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh);
         progressBar = view.findViewById(R.id.progress_bar);
         emptyView = view.findViewById(R.id.empty_view);
         cardSearch = view.findViewById(R.id.card_search);
@@ -177,6 +180,16 @@ public class HomeFragment extends Fragment implements
                 ((MainActivity) getActivity()).openSearch();
             }
         });
+
+        // 下拉刷新
+        swipeRefreshLayout.setColorSchemeResources(
+                R.color.colorPrimary,
+                R.color.colorAccent);
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            // 重新加载数据，刷新 ViewPager 的随机影片
+            isDataLoaded = false;
+            loadMovies();
+        });
     }
 
     private void initData() {
@@ -197,6 +210,7 @@ public class HomeFragment extends Fragment implements
 
             requireActivity().runOnUiThread(() -> {
                 progressBar.setVisibility(View.GONE);
+                swipeRefreshLayout.setRefreshing(false);
 
                 if (allMovies.isEmpty()) {
                     showEmptyView();
