@@ -639,20 +639,39 @@ public class VlcPlayerActivity extends AppCompatActivity implements
     protected void onResume() {
         super.onResume();
         hideSystemUI();
-        if (mediaPlayer != null && !mediaPlayer.isPlaying() && isPlaying) {
-            mediaPlayer.play();
+        // 从后台返回时，重新加载播放
+        if (mediaPlayer != null) {
+            // 重新附加视频视图
+            if (videoLayout != null) {
+                mediaPlayer.detachViews();
+                mediaPlayer.attachViews(videoLayout, null, false, false);
+            }
+            if (!mediaPlayer.isPlaying()) {
+                // 如果播放器已停止，需要重新加载媒体
+                if (mediaPlayer.getMedia() == null && movie != null) {
+                    // 媒体已释放，重新播放
+                    playMovie();
+                } else {
+                    // 媒体还在，只是暂停了，恢复播放
+                    mediaPlayer.play();
+                    isPlaying = true;
+                    btnPlayPause.setImageResource(R.drawable.ic_pause);
+                }
+            }
+            startProgressUpdate();
         }
-        startProgressUpdate();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         saveProgress();
+        stopProgressUpdate();
+        // 切到后台时暂停播放，但不要释放资源
         if (mediaPlayer != null && mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
+            isPlaying = true; // 标记为应该播放状态，以便恢复
         }
-        stopProgressUpdate();
     }
 
     @Override
