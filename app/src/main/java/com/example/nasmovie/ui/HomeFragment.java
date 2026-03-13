@@ -166,9 +166,9 @@ public class HomeFragment extends Fragment implements
         recyclerViewMain.setHasFixedSize(true);
 
         view.findViewById(R.id.btn_scan).setOnClickListener(v -> {
-            // 切换到设置 Fragment
+            // 跳转到服务器管理页面
             if (getActivity() instanceof MainActivity) {
-                ((MainActivity) getActivity()).switchToSettings();
+                ((MainActivity) getActivity()).openServerManage();
             }
         });
 
@@ -327,6 +327,15 @@ public class HomeFragment extends Fragment implements
         List<Movie> result = new ArrayList<>(allMovies);
         Collections.sort(result, (m1, m2) -> Long.compare(m2.getAddTime(), m1.getAddTime()));
         return result.size() > limit ? result.subList(0, limit) : result;
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            // 从隐藏变为可见时，强制刷新数据
+            loadMovies();
+        }
     }
 
     @Override

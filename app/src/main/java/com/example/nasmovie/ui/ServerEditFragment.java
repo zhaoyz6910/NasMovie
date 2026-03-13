@@ -173,6 +173,11 @@ public class ServerEditFragment extends Fragment {
                     smbConfigDao.insert(config);
                 }
 
+                // 添加短暂延迟确保数据库事务完成
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ignored) {}
+
                 View view = getView();
                 if (view != null) {
                     view.post(() -> {

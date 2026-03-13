@@ -282,6 +282,15 @@ public class ServerManageFragment extends Fragment implements
     }
 
     @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            // Fragment 从隐藏变为可见时刷新列表
+            loadServers();
+        }
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         loadServers();

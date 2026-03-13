@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- 主图标：圆角矩形代表电影胶片 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M30,24h48c6.63,0 12,5.37 12,12v36c0,6.63 -5.37,12 -12,12h-48c-6.63,0 -12,-5.37 -12,-12v-36c0,-6.63 5.37,-12 12,-12z"/>
+    <!-- 内部蓝色区域 -->
+    <path
+        android:fillColor="#1976D2"
+        android:pathData="M34,28h40c4.42,0 8,3.58 8,8v32c0,4.42 -3.58,8 -8,8h-40c-4.42,0 -8,-3.58 -8,-8v-32c0,-4.42 3.58,-8 8,-8z"/>
+    <!-- 白色播放三角形 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M62,54L44,44v20L62,54z"/>
+    <!-- 左侧齿孔 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M28,36h4v2h-4z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M28,46h4v2h-4z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M28,56h4v2h-4z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M28,66h4v2h-4z"/>
+    <!-- 右侧齿孔 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M76,36h4v2h-4z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M76,46h4v2h-4z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M76,56h4v2h-4z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M76,66h4v2h-4z"/>
+</vector>
