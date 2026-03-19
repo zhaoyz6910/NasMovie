@@ -27,6 +27,7 @@ import com.example.nasmovie.ui.adapter.FeaturedMovieAdapter;
 import com.example.nasmovie.ui.adapter.MainContentAdapter;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -58,16 +59,7 @@ public class HomeFragment extends Fragment implements
     // 自动轮播相关
     private static final long AUTO_SLIDE_INTERVAL = 4000; // 4秒轮播一次
     private final android.os.Handler autoSlideHandler = new android.os.Handler(android.os.Looper.getMainLooper());
-    private final Runnable autoSlideRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (viewPagerFeatured != null && featuredAdapter != null && featuredAdapter.getItemCount() > 0) {
-                int currentItem = viewPagerFeatured.getCurrentItem();
-                viewPagerFeatured.setCurrentItem(currentItem + 1, true);
-                autoSlideHandler.postDelayed(this, AUTO_SLIDE_INTERVAL);
-            }
-        }
-    };
+    private AutoSlideRunnable autoSlideRunnable;
 
     @Nullable
     @Override
@@ -77,11 +69,39 @@ public class HomeFragment extends Fragment implements
 
     private void startAutoSlide() {
         stopAutoSlide();
+        autoSlideRunnable = new AutoSlideRunnable(this);
         autoSlideHandler.postDelayed(autoSlideRunnable, AUTO_SLIDE_INTERVAL);
     }
 
     private void stopAutoSlide() {
-        autoSlideHandler.removeCallbacks(autoSlideRunnable);
+        if (autoSlideRunnable != null) {
+            autoSlideHandler.removeCallbacks(autoSlideRunnable);
+            autoSlideRunnable = null;
+        }
+    }
+
+    /**
+     * 静态内部类 Runnable，避免持有外部类引用导致内存泄漏
+     */
+    private static class AutoSlideRunnable implements Runnable {
+        private final WeakReference<HomeFragment> fragmentRef;
+
+        AutoSlideRunnable(HomeFragment fragment) {
+            this.fragmentRef = new WeakReference<>(fragment);
+        }
+
+        @Override
+        public void run() {
+            HomeFragment fragment = fragmentRef.get();
+            if (fragment == null || !fragment.isAdded()) return;
+
+            if (fragment.viewPagerFeatured != null && fragment.featuredAdapter != null 
+                    && fragment.featuredAdapter.getItemCount() > 0) {
+                int currentItem = fragment.viewPagerFeatured.getCurrentItem();
+                fragment.viewPagerFeatured.setCurrentItem(currentItem + 1, true);
+                fragment.autoSlideHandler.postDelayed(this, AUTO_SLIDE_INTERVAL);
+            }
+        }
     }
 
     @Override
@@ -210,7 +230,14 @@ public class HomeFragment extends Fragment implements
             List<Movie> highRatedMovies = getHighRatedMovies(10);
             List<Movie> newestMovies = getNewestMovies(10);
 
-            requireActivity().runOnUiThread(() -> {
+            if (!isAdded()) return;
+
+            androidx.fragment.app.FragmentActivity activity = getActivity();
+            if (activity == null || activity.isFinishing()) return;
+
+            activity.runOnUiThread(() -> {
+                if (!isAdded()) return;
+
                 progressBar.setVisibility(View.GONE);
                 swipeRefreshLayout.setRefreshing(false);
 

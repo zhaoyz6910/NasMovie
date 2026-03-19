@@ -15,6 +15,8 @@ import com.example.nasmovie.ui.ExoPlayerActivity;
 import com.example.nasmovie.ui.LockActivity;
 import com.example.nasmovie.util.PreferenceManager;
 
+import java.lang.ref.WeakReference;
+
 /**
  * 应用程序入口类
  */
@@ -36,6 +38,10 @@ public class NASMovieApp extends Application implements Application.ActivityLife
 
     // 最小后台时间（毫秒），超过此时间返回需要显示锁屏
     private static final long MIN_BACKGROUND_TIME_FOR_LOCK = 500;
+
+    // Handler 用于延迟操作
+    private final Handler lockHandler = new Handler(Looper.getMainLooper());
+    private WeakReference<Activity> currentActivityRef;
 
     @Override
     public void onCreate() {
@@ -154,15 +160,38 @@ public class NASMovieApp extends Application implements Application.ActivityLife
             // 标记正在启动锁屏
             isStartingLockScreen = true;
             
+            // 保存当前 Activity 的弱引用
+            currentActivityRef = new WeakReference<>(activity);
+            
             // 启动锁屏Activity
             Intent intent = new Intent(activity, LockActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             activity.startActivity(intent);
             
+            // 移除之前的回调，避免内存泄漏
+            lockHandler.removeCallbacks(lockResetRunnable);
             // 延迟重置标记
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                isStartingLockScreen = false;
-            }, 500);
+            lockHandler.postDelayed(lockResetRunnable, 500);
+        }
+    }
+
+    /**
+     * 重置锁屏启动标记的 Runnable
+     * 使用静态内部类避免持有外部类引用
+     */
+    private final Runnable lockResetRunnable = new Runnable() {
+        @Override
+        public void run() {
+            isStartingLockScreen = false;
+        }
+    };
+
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        // 释放图片缓存资源
+        if (imageCache != null) {
+            imageCache.release();
         }
     }
 }

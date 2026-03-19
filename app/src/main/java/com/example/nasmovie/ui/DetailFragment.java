@@ -118,7 +118,7 @@ public class DetailFragment extends Fragment {
         toolbar.setShowBack(true);
         toolbar.setOnBackClickListener(() -> {
             if (getActivity() instanceof MainActivity) {
-                ((MainActivity) getActivity()).onBackPressed();
+                ((MainActivity) getActivity()).performRealBack();
             }
         });
 
@@ -140,7 +140,11 @@ public class DetailFragment extends Fragment {
             isFavorite = repository.isFavorite(movieId);
             WatchProgress progress = repository.getWatchProgress(movieId);
 
+            if (!isAdded()) return;
+
             requireActivity().runOnUiThread(() -> {
+                if (!isAdded()) return;
+
                 if (movie != null) {
                     // 隐藏加载进度条
                     progressLoading.setVisibility(View.GONE);
@@ -158,7 +162,7 @@ public class DetailFragment extends Fragment {
                         .start();
                 } else {
                     if (getActivity() instanceof MainActivity) {
-                        ((MainActivity) getActivity()).onBackPressed();
+                        ((MainActivity) getActivity()).performRealBack();
                     }
                 }
             });
@@ -284,7 +288,14 @@ public class DetailFragment extends Fragment {
                 repository.addFavorite(movieId);
             }
             isFavorite = !isFavorite;
-            requireActivity().runOnUiThread(this::updateFavoriteButton);
+
+            if (!isAdded()) return;
+
+            requireActivity().runOnUiThread(() -> {
+                if (isAdded()) {
+                    updateFavoriteButton();
+                }
+            });
         }).start();
     }
 
@@ -294,7 +305,14 @@ public class DetailFragment extends Fragment {
         if (movieId != null) {
             new Thread(() -> {
                 WatchProgress progress = repository.getWatchProgress(movieId);
-                requireActivity().runOnUiThread(() -> displayProgress(progress));
+
+                if (!isAdded()) return;
+
+                requireActivity().runOnUiThread(() -> {
+                    if (isAdded()) {
+                        displayProgress(progress);
+                    }
+                });
             }).start();
         }
     }

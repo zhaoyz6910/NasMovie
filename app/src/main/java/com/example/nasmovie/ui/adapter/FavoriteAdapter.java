@@ -109,7 +109,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
             movieCard = itemView.findViewById(R.id.movie_card);
 
             itemView.setOnClickListener(v -> {
-                int position = getAdapterPosition();
+                int position = getBindingAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
                     Movie movie = movies.get(position);
                     if (selectionMode) {
@@ -121,7 +121,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
             });
 
             itemView.setOnLongClickListener(v -> {
-                int position = getAdapterPosition();
+                int position = getBindingAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
                     Movie movie = movies.get(position);
                     if (longClickListener != null) {

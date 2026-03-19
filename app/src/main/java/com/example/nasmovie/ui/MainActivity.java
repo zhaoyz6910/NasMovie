@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
@@ -52,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         initViews();
+        setupBackPressedHandler();
 
         // 如果是第一次启动，加载首页 Fragment
         if (savedInstanceState == null) {
@@ -222,15 +224,19 @@ public class MainActivity extends AppCompatActivity {
         currentFragment = fragment;
     }
 
-    @Override
-    public void onBackPressed() {
-        // 首先尝试让当前 Fragment 拦截返回事件
-        if (currentFragment instanceof IBackInterceptor) {
-            if (((IBackInterceptor) currentFragment).onBackPressed()) {
-                return; // 被拦截了
+    private void setupBackPressedHandler() {
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                // 首先尝试让当前 Fragment 拦截返回事件
+                if (currentFragment instanceof IBackInterceptor) {
+                    if (((IBackInterceptor) currentFragment).onBackPressed()) {
+                        return; // 被拦截了
+                    }
+                }
+                performRealBack();
             }
-        }
-        performRealBack();
+        });
     }
 
     /**
@@ -269,7 +275,7 @@ public class MainActivity extends AppCompatActivity {
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastBackPressTime < BACK_PRESS_INTERVAL) {
                 // 2 秒内再次按返回键，退出应用
-                super.onBackPressed();
+                finish();
             } else {
                 // 第一次按返回键，显示提示
                 Toast.makeText(this, "再按一次退出应用", Toast.LENGTH_SHORT).show();

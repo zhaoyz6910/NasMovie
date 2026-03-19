@@ -14,6 +14,7 @@ import com.example.nasmovie.data.model.Movie;
 import com.example.nasmovie.data.repository.MovieRepository;
 import com.example.nasmovie.view.MovieCard;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,16 +37,16 @@ public class MainContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     private List<Movie> gridMovies = new ArrayList<>();
     private OnMovieClickListener listener;
     private MovieRepository repository;
-    private View headerView;
+    private WeakReference<View> headerViewRef;
     private String currentSortText = null;
 
     public void setHeaderView(View headerView) {
-        this.headerView = headerView;
+        this.headerViewRef = headerView != null ? new WeakReference<>(headerView) : null;
         notifyDataSetChanged();
     }
 
     public View getHeaderView() {
-        return headerView;
+        return headerViewRef != null ? headerViewRef.get() : null;
     }
 
     public void setRepository(MovieRepository repository) {
@@ -82,6 +83,7 @@ public class MainContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     public void setSortText(String sortText) {
         this.currentSortText = sortText;
         // 只更新网格标题
+        View headerView = getHeaderView();
         int offset = headerView != null ? 1 : 0;
         int sectionCount = sections.size();
         int headerPosition = offset + sectionCount;
@@ -90,6 +92,7 @@ public class MainContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     @Override
     public int getItemViewType(int position) {
+        View headerView = getHeaderView();
         int offset = headerView != null ? 1 : 0;
         int sectionCount = sections.size();
         int adjustedPosition = position - offset;
@@ -109,6 +112,7 @@ public class MainContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == TYPE_HEADER_PRIVATE) {
+            View headerView = getHeaderView();
             return new HeaderViewHolder(headerView);
         } else if (viewType == TYPE_SECTION_PRIVATE) {
             View view = LayoutInflater.from(parent.getContext())
@@ -130,6 +134,7 @@ public class MainContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         if (holder instanceof HeaderViewHolder) {
             return;
         }
+        View headerView = getHeaderView();
         int offset = headerView != null ? 1 : 0;
         int adjustedPosition = position - offset;
         int sectionCount = sections.size();
@@ -146,6 +151,7 @@ public class MainContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     @Override
     public int getItemCount() {
+        View headerView = getHeaderView();
         int offset = headerView != null ? 1 : 0;
         return offset + sections.size() + 1 + gridMovies.size();
     }

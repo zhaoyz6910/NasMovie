@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.media3.common.C;
@@ -115,10 +116,22 @@ public class ExoPlayerActivity extends AppCompatActivity implements
         initViews();
         initData();
         initPlayer();
+        setupBackPressedHandler();
         loadMovie();
 
         hideSystemUI();
         keepScreenOn(true);
+    }
+
+    private void setupBackPressedHandler() {
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                saveProgress();
+                setEnabled(false);
+                getOnBackPressedDispatcher().onBackPressed();
+            }
+        });
     }
 
     private void initViews() {
@@ -144,7 +157,10 @@ public class ExoPlayerActivity extends AppCompatActivity implements
         btnPlayPause.setOnClickListener(v -> togglePlayPause());
 
         // Back button
-        btnBack.setOnClickListener(v -> onBackPressed());
+        btnBack.setOnClickListener(v -> {
+            saveProgress();
+            finish();
+        });
 
         // Fullscreen button
         btnFullscreen.setOnClickListener(v -> toggleFullscreen());
@@ -394,44 +410,30 @@ public class ExoPlayerActivity extends AppCompatActivity implements
             return cacheFile.getAbsolutePath();
         }
 
-        SmbClient client = null;
-        FileOutputStream fos = null;
-        InputStream is = null;
-
-        try {
-            client = new SmbClient();
+        try (SmbClient client = new SmbClient()) {
             if (!client.connect(config)) {
                 return null;
             }
 
-            is = client.readFile(smbPath);
-            if (is == null) {
-                return null;
+            try (InputStream is = client.readFile(smbPath);
+                 FileOutputStream fos = new FileOutputStream(cacheFile)) {
+                
+                if (is == null) {
+                    return null;
+                }
+
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                while ((bytesRead = is.read(buffer)) != -1) {
+                    fos.write(buffer, 0, bytesRead);
+                }
+                fos.flush();
+
+                return cacheFile.getAbsolutePath();
             }
-
-            fos = new FileOutputStream(cacheFile);
-            byte[] buffer = new byte[8192];
-            int bytesRead;
-            while ((bytesRead = is.read(buffer)) != -1) {
-                fos.write(buffer, 0, bytesRead);
-            }
-            fos.flush();
-
-            return cacheFile.getAbsolutePath();
-
         } catch (Exception e) {
             Log.e(TAG, "Error downloading subtitle: " + e.getMessage());
             return null;
-        } finally {
-            try {
-                if (is != null) is.close();
-            } catch (Exception ignored) {}
-            try {
-                if (fos != null) fos.close();
-            } catch (Exception ignored) {}
-            if (client != null) {
-                client.disconnect();
-            }
         }
     }
 
@@ -606,30 +608,39 @@ public class ExoPlayerActivity extends AppCompatActivity implements
     protected void onDestroy() {
         super.onDestroy();
         keepScreenOn(false);
+        // 重要：先移除所有 Handler 回调，避免回调访问已释放的 player
         stopProgressUpdate();
         handler.removeCallbacks(hideControlsRunnable);
+        handler.removeCallbacksAndMessages(null);
 
+        // 然后再释放 player
         if (player != null) {
             player.release();
             player = null;
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        saveProgress();
-        super.onBackPressed();
-    }
-
+    @SuppressWarnings("deprecation")
     private void hideSystemUI() {
-        getWindow().getDecorView().setSystemUiVisibility(
-            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-            | View.SYSTEM_UI_FLAG_FULLSCREEN
-            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-            | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-        );
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            // Android 11+ 使用 WindowInsetsController
+            getWindow().setDecorFitsSystemWindows(false);
+            android.view.WindowInsetsController controller = getWindow().getInsetsController();
+            if (controller != null) {
+                controller.hide(android.view.WindowInsets.Type.statusBars() | android.view.WindowInsets.Type.navigationBars());
+                controller.setSystemBarsBehavior(android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+            }
+        } else {
+            // Android 10 及以下使用旧 API (deprecated but needed for backward compatibility)
+            getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            );
+        }
     }
 
     private void keepScreenOn(boolean keepOn) {

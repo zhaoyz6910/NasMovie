@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.nasmovie.R;
 import com.example.nasmovie.util.PreferenceManager;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,9 +39,9 @@ public class LockActivity extends AppCompatActivity implements View.OnClickListe
     private String tempPassword = "";
     private boolean isUnlocking = false;
 
-    // 延迟倒计时
-    private Handler delayHandler = new Handler(Looper.getMainLooper());
-    private Runnable delayRunnable;
+    // 延迟倒计时 - 使用静态内部类避免内存泄漏
+    private final Handler delayHandler = new Handler(Looper.getMainLooper());
+    private DelayRunnable delayRunnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -203,23 +204,7 @@ public class LockActivity extends AppCompatActivity implements View.OnClickListe
     private void startDelayCountdown() {
         stopDelayCountdown();
         
-        delayRunnable = new Runnable() {
-            @Override
-            public void run() {
-                if (preferenceManager.isLockDelayRequired()) {
-                    long remaining = preferenceManager.getLockRemainingDelayTime() / 1000;
-                    if (remaining > 0) {
-                        showError("请等待 " + remaining + " 秒后重试");
-                        delayHandler.postDelayed(this, 1000);
-                    } else {
-                        // 延迟结束，隐藏错误提示
-                        tvError.setVisibility(View.INVISIBLE);
-                    }
-                } else {
-                    tvError.setVisibility(View.INVISIBLE);
-                }
-            }
-        };
+        delayRunnable = new DelayRunnable(this);
         
         // 立即显示第一次
         long remaining = preferenceManager.getLockRemainingDelayTime() / 1000;
@@ -234,6 +219,35 @@ public class LockActivity extends AppCompatActivity implements View.OnClickListe
         if (delayRunnable != null) {
             delayHandler.removeCallbacks(delayRunnable);
             delayRunnable = null;
+        }
+    }
+
+    /**
+     * 静态内部类 Runnable，避免持有外部类引用导致内存泄漏
+     */
+    private static class DelayRunnable implements Runnable {
+        private final WeakReference<LockActivity> activityRef;
+
+        DelayRunnable(LockActivity activity) {
+            this.activityRef = new WeakReference<>(activity);
+        }
+
+        @Override
+        public void run() {
+            LockActivity activity = activityRef.get();
+            if (activity == null || activity.isFinishing()) return;
+
+            if (activity.preferenceManager.isLockDelayRequired()) {
+                long remaining = activity.preferenceManager.getLockRemainingDelayTime() / 1000;
+                if (remaining > 0) {
+                    activity.showError("请等待 " + remaining + " 秒后重试");
+                    activity.delayHandler.postDelayed(this, 1000);
+                } else {
+                    activity.tvError.setVisibility(View.INVISIBLE);
+                }
+            } else {
+                activity.tvError.setVisibility(View.INVISIBLE);
+            }
         }
     }
 
@@ -433,10 +447,22 @@ public class LockActivity extends AppCompatActivity implements View.OnClickListe
         tvError.setVisibility(View.VISIBLE);
     }
 
+    @SuppressWarnings("deprecation")
     private void vibreateError() {
-        android.os.Vibrator vibrator = (android.os.Vibrator) getSystemService(VIBRATOR_SERVICE);
+        android.os.Vibrator vibrator;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            android.os.VibratorManager vibratorManager = (android.os.VibratorManager) getSystemService(VIBRATOR_MANAGER_SERVICE);
+            vibrator = vibratorManager != null ? vibratorManager.getDefaultVibrator() : null;
+        } else {
+            vibrator = (android.os.Vibrator) getSystemService(VIBRATOR_SERVICE);
+        }
+        
         if (vibrator != null && vibrator.hasVibrator()) {
-            vibrator.vibrate(200);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                vibrator.vibrate(android.os.VibrationEffect.createOneShot(200, android.os.VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                vibrator.vibrate(200);
+            }
         }
     }
 

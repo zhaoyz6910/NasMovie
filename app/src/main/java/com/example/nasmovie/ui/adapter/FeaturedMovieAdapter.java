@@ -53,10 +53,13 @@ public class FeaturedMovieAdapter extends RecyclerView.Adapter<FeaturedMovieAdap
         holder.bind(movie, actualPosition);
     }
 
+    // 虚拟项目数量，用于实现无限循环效果（使用较小的值避免潜在问题）
+    private static final int VIRTUAL_COUNT = 10000;
+
     @Override
     public int getItemCount() {
-        // 返回一个很大的数来实现无限循环效果
-        return movies.isEmpty() ? 0 : Integer.MAX_VALUE;
+        // 返回虚拟数量来实现无限循环效果
+        return movies.isEmpty() ? 0 : VIRTUAL_COUNT;
     }
 
     /**

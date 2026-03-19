@@ -77,8 +77,8 @@ public class ServerManageFragment extends Fragment implements
         toolbar.setTitle(R.string.server_manage);
         toolbar.setShowBack(true);
         toolbar.setOnBackClickListener(() -> {
-            if (getActivity() != null) {
-                getActivity().onBackPressed();
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).performRealBack();
             }
         });
 

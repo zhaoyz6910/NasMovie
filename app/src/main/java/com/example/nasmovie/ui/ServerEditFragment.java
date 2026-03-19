@@ -80,7 +80,7 @@ public class ServerEditFragment extends Fragment {
         }
         toolbar.setOnBackClickListener(() -> {
             if (getActivity() instanceof MainActivity) {
-                ((MainActivity) getActivity()).onBackPressed();
+                ((MainActivity) getActivity()).performRealBack();
             }
         });
 
@@ -184,7 +184,7 @@ public class ServerEditFragment extends Fragment {
                         if (isAdded() && getContext() != null) {
                             Toast.makeText(getContext(), "保存成功", Toast.LENGTH_SHORT).show();
                             if (getActivity() instanceof MainActivity) {
-                                ((MainActivity) getActivity()).onBackPressed();
+                                ((MainActivity) getActivity()).performRealBack();
                             }
                         }
                     });

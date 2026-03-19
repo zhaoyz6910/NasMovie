@@ -30,6 +30,9 @@ import java.util.concurrent.Executors;
 public class ScanService {
 
     private static final String TAG = "ScanService";
+    
+    // 最大递归深度，防止无限递归
+    private static final int MAX_RECURSION_DEPTH = 5;
 
     private final Context context;
     private final AppDatabase database;
@@ -154,22 +157,22 @@ public class ScanService {
      * 返回该服务器添加的电影数量
      */
     private int performScanInternal(SmbConfig config, ScanCallback callback) {
-        currentClient = new SmbClient();
         List<Movie> movies = new ArrayList<>();
         int scannedCount = 0;
         int addedCount = 0;
 
-        try {
+        try (SmbClient client = new SmbClient()) {
+            currentClient = client;
             safeCallback(() -> callback.onServerStart(config));
             Log.i(TAG, "开始连接服务器: " + config.getHost());
 
-            if (!currentClient.connect(config)) {
+            if (!client.connect(config)) {
                 safeCallback(() -> callback.onError("无法连接服务器: " + config.getName()));
                 return 0;
             }
 
             String moviePath = config.getMoviePath() != null ? config.getMoviePath() : "";
-            List<SmbFileInfo> items = currentClient.listFiles(moviePath);
+            List<SmbFileInfo> items = client.listFiles(moviePath);
             
             List<SmbFileInfo> folders = new ArrayList<>();
             for (SmbFileInfo item : items) {
@@ -212,10 +215,7 @@ public class ScanService {
             Log.e(TAG, "Scan internal error: " + config.getName(), e);
             return 0;
         } finally {
-            if (currentClient != null) {
-                currentClient.disconnect();
-                currentClient = null;
-            }
+            currentClient = null;
         }
     }
 
@@ -230,7 +230,7 @@ public class ScanService {
     }
 
     private boolean scanMovieFolderRecursive(String folderPath, int depth, List<Movie> movies) {
-        if (depth > 5 || isCancelRequested) return false;
+        if (depth > MAX_RECURSION_DEPTH || isCancelRequested) return false;
 
         try {
             List<SmbFileInfo> files = currentClient.listFiles(folderPath);

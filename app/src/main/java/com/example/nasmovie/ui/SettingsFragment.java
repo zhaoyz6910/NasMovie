@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -32,6 +34,9 @@ public class SettingsFragment extends Fragment {
 
     private PreferenceManager preferenceManager;
 
+    // Activity Result API
+    private ActivityResultLauncher<Intent> setPasswordLauncher;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -42,6 +47,14 @@ public class SettingsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         initViews(view);
         initData();
+        initActivityResultLauncher();
+    }
+
+    private void initActivityResultLauncher() {
+        setPasswordLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> updateLockDisplay()
+        );
     }
 
     private void initViews(View view) {
@@ -173,25 +186,15 @@ public class SettingsFragment extends Fragment {
         } else {
             Intent intent = new Intent(getContext(), LockActivity.class);
             intent.putExtra("setting_password", true);
-            startActivityForResult(intent, REQUEST_SET_PASSWORD);
+            setPasswordLauncher.launch(intent);
         }
     }
 
     private void changePassword() {
         Intent intent = new Intent(getContext(), LockActivity.class);
         intent.putExtra("setting_password", true);
-        startActivityForResult(intent, REQUEST_SET_PASSWORD);
+        setPasswordLauncher.launch(intent);
     }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_SET_PASSWORD) {
-            updateLockDisplay();
-        }
-    }
-
-    private static final int REQUEST_SET_PASSWORD = 100;
 
     @Override
     public void onResume() {

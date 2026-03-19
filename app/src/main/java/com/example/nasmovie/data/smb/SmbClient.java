@@ -24,8 +24,9 @@ import java.util.List;
 /**
  * SMB客户端
  * 用于连接NAS服务器、读取文件和目录
+ * 实现 AutoCloseable 支持 try-with-resources
  */
-public class SmbClient {
+public class SmbClient implements AutoCloseable {
 
     private static final String TAG = "SmbClient";
 
@@ -38,6 +39,11 @@ public class SmbClient {
 
     public SmbClient() {
         this.smbClient = new SMBClient();
+    }
+
+    @Override
+    public void close() {
+        disconnect();
     }
 
     /**
@@ -85,8 +91,24 @@ public class SmbClient {
             Log.i(TAG, "Connected to SMB server: " + config.getHost());
             return true;
 
+        } catch (java.net.UnknownHostException e) {
+            Log.e(TAG, "Unknown host: " + config.getHost());
+            disconnect();
+            return false;
+        } catch (java.net.ConnectException e) {
+            Log.e(TAG, "Connection refused: " + config.getHost() + ":" + config.getPort());
+            disconnect();
+            return false;
+        } catch (java.io.IOException e) {
+            Log.e(TAG, "IO error connecting to " + config.getHost() + ": " + e.getMessage());
+            disconnect();
+            return false;
+        } catch (SMBApiException e) {
+            Log.e(TAG, "SMB API error: " + e.getMessage());
+            disconnect();
+            return false;
         } catch (Exception e) {
-            Log.e(TAG, "Connection error: " + e.getMessage(), e);
+            Log.e(TAG, "Unexpected connection error: " + e.getMessage(), e);
             disconnect();
             return false;
         }

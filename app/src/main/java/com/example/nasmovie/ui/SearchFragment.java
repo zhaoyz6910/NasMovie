@@ -94,7 +94,7 @@ public class SearchFragment extends Fragment implements
         toolbar.setShowBack(true);
         toolbar.setOnBackClickListener(() -> {
             if (getActivity() instanceof MainActivity) {
-                ((MainActivity) getActivity()).onBackPressed();
+                ((MainActivity) getActivity()).performRealBack();
             }
         });
 

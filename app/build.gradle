@@ -40,6 +40,11 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
+    // 显示 deprecation 警告
+    tasks.withType(JavaCompile).configureEach {
+        options.compilerArgs << '-Xlint:deprecation'
+    }
+
     packagingOptions {
         resources {
             excludes += ['META-INF/DEPENDENCIES', 'META-INF/LICENSE', 'META-INF/LICENSE.txt', 'META-INF/NOTICE', 'META-INF/NOTICE.txt']

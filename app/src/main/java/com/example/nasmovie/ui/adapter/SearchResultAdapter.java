@@ -62,7 +62,7 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
             movieCard = itemView.findViewById(R.id.movie_card);
 
             itemView.setOnClickListener(v -> {
-                int position = getAdapterPosition();
+                int position = getBindingAdapterPosition();
                 if (position != RecyclerView.NO_POSITION && listener != null) {
                     listener.onMovieClick(movies.get(position));
                 }

@@ -1,6 +1,7 @@
 package com.example.nasmovie.data.repository;
 
 import android.content.Context;
+import android.os.Looper;
 import android.util.Log;
 
 import com.example.nasmovie.NASMovieApp;
@@ -52,12 +53,22 @@ public class MovieRepository {
         executor = Executors.newFixedThreadPool(4);
     }
 
+    /**
+     * 检查是否在主线程，如果是则抛出异常
+     */
+    private void assertNotMainThread() {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            throw new IllegalStateException("数据库操作不能在主线程执行");
+        }
+    }
+
     // ==================== 电影操作 ====================
 
     /**
      * 获取所有电影
      */
     public List<Movie> getAllMovies() {
+        assertNotMainThread();
         return movieDao.getAll();
     }
 
@@ -65,6 +76,7 @@ public class MovieRepository {
      * 按排序类型获取电影
      */
     public List<Movie> getAllMovies(SortType sortType) {
+        assertNotMainThread();
         switch (sortType) {
             case ADD_TIME_DESC:
                 return movieDao.getAllByAddTime();
@@ -86,6 +98,7 @@ public class MovieRepository {
      * 根据ID获取电影
      */
     public Movie getMovieById(String id) {
+        assertNotMainThread();
         return movieDao.getById(id);
     }
 
@@ -93,6 +106,7 @@ public class MovieRepository {
      * 搜索电影
      */
     public List<Movie> searchMovies(String keyword) {
+        assertNotMainThread();
         return movieDao.search(keyword);
     }
 
@@ -100,6 +114,7 @@ public class MovieRepository {
      * 保存电影
      */
     public void saveMovie(Movie movie) {
+        assertNotMainThread();
         movieDao.insert(movie);
     }
 
@@ -107,6 +122,7 @@ public class MovieRepository {
      * 保存电影列表
      */
     public void saveMovies(List<Movie> movies) {
+        assertNotMainThread();
         movieDao.insertAll(movies);
     }
 
@@ -114,6 +130,7 @@ public class MovieRepository {
      * 删除电影
      */
     public void deleteMovie(String id) {
+        assertNotMainThread();
         movieDao.deleteById(id);
     }
 
@@ -121,6 +138,7 @@ public class MovieRepository {
      * 删除指定服务器的所有电影
      */
     public void deleteMoviesByServer(String serverId) {
+        assertNotMainThread();
         movieDao.deleteByServerId(serverId);
     }
 
@@ -128,6 +146,7 @@ public class MovieRepository {
      * 获取电影数量
      */
     public int getMovieCount() {
+        assertNotMainThread();
         return movieDao.getCount();
     }
 
@@ -137,6 +156,7 @@ public class MovieRepository {
      * 获取观看进度
      */
     public WatchProgress getWatchProgress(String movieId) {
+        assertNotMainThread();
         return watchProgressDao.getByMovieId(movieId);
     }
 
@@ -144,6 +164,7 @@ public class MovieRepository {
      * 保存观看进度
      */
     public void saveWatchProgress(String movieId, long position, long duration) {
+        assertNotMainThread();
         WatchProgress progress = new WatchProgress(movieId, position, duration);
         watchProgressDao.insert(progress);
     }
@@ -152,6 +173,7 @@ public class MovieRepository {
      * 删除观看进度
      */
     public void deleteWatchProgress(String movieId) {
+        assertNotMainThread();
         watchProgressDao.deleteByMovieId(movieId);
     }
 
@@ -159,6 +181,7 @@ public class MovieRepository {
      * 获取最近观看记录
      */
     public List<WatchProgress> getRecentWatchProgress(int limit) {
+        assertNotMainThread();
         return watchProgressDao.getRecent(limit);
     }
 
@@ -168,6 +191,7 @@ public class MovieRepository {
      * 判断是否已收藏
      */
     public boolean isFavorite(String movieId) {
+        assertNotMainThread();
         return favoriteDao.isFavorite(movieId);
     }
 
@@ -175,6 +199,7 @@ public class MovieRepository {
      * 添加收藏
      */
     public void addFavorite(String movieId) {
+        assertNotMainThread();
         Favorite favorite = new Favorite(movieId);
         favoriteDao.insert(favorite);
     }
@@ -183,6 +208,7 @@ public class MovieRepository {
      * 取消收藏
      */
     public void removeFavorite(String movieId) {
+        assertNotMainThread();
         favoriteDao.deleteByMovieId(movieId);
     }
 
@@ -190,6 +216,7 @@ public class MovieRepository {
      * 获取所有收藏的电影ID
      */
     public List<String> getAllFavoriteIds() {
+        assertNotMainThread();
         return favoriteDao.getAllMovieIds();
     }
 
@@ -197,6 +224,7 @@ public class MovieRepository {
      * 获取收藏列表
      */
     public List<Movie> getFavoriteMovies() {
+        assertNotMainThread();
         List<String> ids = favoriteDao.getAllMovieIds();
         if (ids.isEmpty()) {
             return new ArrayList<>();

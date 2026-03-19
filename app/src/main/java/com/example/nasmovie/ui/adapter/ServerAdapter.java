@@ -118,14 +118,14 @@ public class ServerAdapter extends RecyclerView.Adapter<ServerAdapter.ViewHolder
             tvProgressDetail = itemView.findViewById(R.id.tv_progress_detail);
 
             itemView.setOnClickListener(v -> {
-                int position = getAdapterPosition();
+                int position = getBindingAdapterPosition();
                 if (position != RecyclerView.NO_POSITION && onItemClickListener != null) {
                     onItemClickListener.onItemClick(servers.get(position));
                 }
             });
 
             itemView.setOnLongClickListener(v -> {
-                int position = getAdapterPosition();
+                int position = getBindingAdapterPosition();
                 if (position != RecyclerView.NO_POSITION && onItemLongClickListener != null) {
                     onItemLongClickListener.onItemLongClick(servers.get(position));
                     return true;

@@ -305,5 +305,14 @@ public class SmbImageCache {
      */
     public void release() {
         executorService.shutdown();
+        try {
+            // 等待任务完成，最多等待5秒
+            if (!executorService.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS)) {
+                executorService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executorService.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 }
