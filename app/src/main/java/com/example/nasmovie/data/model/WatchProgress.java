@@ -3,12 +3,15 @@ package com.example.nasmovie.data.model;
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.Ignore;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 /**
  * 观看进度实体
  */
-@Entity(tableName = "watch_progress")
+@Entity(tableName = "watch_progress", indices = {
+    @Index(value = "updateTime")
+})
 public class WatchProgress {
 
     @NonNull

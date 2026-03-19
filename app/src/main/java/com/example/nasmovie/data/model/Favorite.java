@@ -3,12 +3,15 @@ package com.example.nasmovie.data.model;
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.Ignore;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 /**
  * 收藏实体
  */
-@Entity(tableName = "favorite")
+@Entity(tableName = "favorite", indices = {
+    @Index(value = "addTime")
+})
 public class Favorite {
 
     @NonNull

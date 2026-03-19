@@ -2,6 +2,7 @@ package com.example.nasmovie.data.model;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 import com.google.gson.Gson;
@@ -14,7 +15,15 @@ import java.util.List;
 /**
  * 电影实体
  */
-@Entity(tableName = "movie")
+@Entity(tableName = "movie", indices = {
+    @Index(value = "serverId"),
+    @Index(value = "year"),
+    @Index(value = "rating"),
+    @Index(value = "duration"),
+    @Index(value = "fileSize"),
+    @Index(value = "addTime"),
+    @Index(value = "title")
+})
 public class Movie {
 
     @NonNull
