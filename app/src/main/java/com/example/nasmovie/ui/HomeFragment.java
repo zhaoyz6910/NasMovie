@@ -25,6 +25,7 @@ import com.example.nasmovie.data.model.WatchProgress;
 import com.example.nasmovie.data.repository.MovieRepository;
 import com.example.nasmovie.ui.adapter.FeaturedMovieAdapter;
 import com.example.nasmovie.ui.adapter.MainContentAdapter;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,6 +53,7 @@ public class HomeFragment extends Fragment implements
     private MovieRepository repository;
     private List<Movie> allMovies = new ArrayList<>();
     private boolean isDataLoaded = false;
+    private MovieRepository.SortType currentSortType = MovieRepository.SortType.ADD_TIME_DESC;
 
     // 自动轮播相关
     private static final long AUTO_SLIDE_INTERVAL = 4000; // 4秒轮播一次
@@ -201,7 +203,7 @@ public class HomeFragment extends Fragment implements
         emptyView.setVisibility(View.GONE);
 
         new Thread(() -> {
-            allMovies = repository.getAllMovies();
+            allMovies = repository.getAllMovies(currentSortType);
 
             List<Movie> featuredMovies = getRandomMovies(5);
             List<Movie> recentMovies = getRecentWatchedMovies(10);
@@ -216,6 +218,7 @@ public class HomeFragment extends Fragment implements
                     showEmptyView();
                 } else {
                     showContent(featuredMovies, recentMovies, highRatedMovies, newestMovies);
+                    updateSortText();
                 }
                 // 标记数据已加载
                 isDataLoaded = true;
@@ -302,6 +305,7 @@ public class HomeFragment extends Fragment implements
         }
 
         mainContentAdapter.setData(sections, allMovies);
+        mainContentAdapter.setOnSortClickListener(() -> showSortDialog());
     }
 
     private List<Movie> getRandomMovies(int limit) {
@@ -401,5 +405,73 @@ public class HomeFragment extends Fragment implements
         if (repository != null) {
             repository.close();
         }
+    }
+
+    // ==================== 排序相关 ====================
+
+    private void showSortDialog() {
+        BottomSheetDialog dialog = new BottomSheetDialog(requireContext());
+        View view = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_sort, null);
+
+        view.findViewById(R.id.sort_title_asc).setOnClickListener(v -> {
+            changeSort(MovieRepository.SortType.TITLE_ASC);
+            dialog.dismiss();
+        });
+        view.findViewById(R.id.sort_add_time).setOnClickListener(v -> {
+            changeSort(MovieRepository.SortType.ADD_TIME_DESC);
+            dialog.dismiss();
+        });
+        view.findViewById(R.id.sort_year).setOnClickListener(v -> {
+            changeSort(MovieRepository.SortType.YEAR_DESC);
+            dialog.dismiss();
+        });
+        view.findViewById(R.id.sort_rating).setOnClickListener(v -> {
+            changeSort(MovieRepository.SortType.RATING_DESC);
+            dialog.dismiss();
+        });
+        view.findViewById(R.id.sort_duration).setOnClickListener(v -> {
+            changeSort(MovieRepository.SortType.DURATION_DESC);
+            dialog.dismiss();
+        });
+        view.findViewById(R.id.sort_file_size).setOnClickListener(v -> {
+            changeSort(MovieRepository.SortType.FILE_SIZE_DESC);
+            dialog.dismiss();
+        });
+
+        dialog.setContentView(view);
+        dialog.show();
+    }
+
+    private void changeSort(MovieRepository.SortType sortType) {
+        if (currentSortType != sortType) {
+            currentSortType = sortType;
+            loadMovies();
+        }
+    }
+
+    private void updateSortText() {
+        String sortText;
+        switch (currentSortType) {
+            case TITLE_ASC:
+                sortText = getString(R.string.sort_title);
+                break;
+            case YEAR_DESC:
+                sortText = getString(R.string.sort_year);
+                break;
+            case RATING_DESC:
+                sortText = getString(R.string.sort_rating);
+                break;
+            case DURATION_DESC:
+                sortText = getString(R.string.sort_duration);
+                break;
+            case FILE_SIZE_DESC:
+                sortText = getString(R.string.sort_file_size);
+                break;
+            case ADD_TIME_DESC:
+            default:
+                sortText = getString(R.string.sort_add_time);
+                break;
+        }
+        mainContentAdapter.setSortText(sortText);
     }
 }

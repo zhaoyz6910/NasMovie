@@ -108,4 +108,13 @@
     <!-- 搜索 -->
     <string name="search_title">搜索</string>
     <string name="search_history">搜索历史</string>
+
+    <!-- 排序 -->
+    <string name="sort_title">标题 A-Z</string>
+    <string name="sort_add_time">最新添加</string>
+    <string name="sort_year">年份最新</string>
+    <string name="sort_rating">评分最高</string>
+    <string name="sort_duration">时长最长</string>
+    <string name="sort_file_size">文件最大</string>
+    <string name="sort_by">排序</string>
 </resources>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/sort_by"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/textPrimary"
+        android:paddingBottom="12dp" />
+
+    <TextView
+        android:id="@+id/sort_title_asc"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="@string/sort_title"
+        android:textSize="15sp"
+        android:textColor="@color/textPrimary"
+        android:gravity="center_vertical"
+        android:background="?attr/selectableItemBackground"
+        android:paddingHorizontal="8dp" />
+
+    <TextView
+        android:id="@+id/sort_add_time"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="@string/sort_add_time"
+        android:textSize="15sp"
+        android:textColor="@color/textPrimary"
+        android:gravity="center_vertical"
+        android:background="?attr/selectableItemBackground"
+        android:paddingHorizontal="8dp" />
+
+    <TextView
+        android:id="@+id/sort_year"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="@string/sort_year"
+        android:textSize="15sp"
+        android:textColor="@color/textPrimary"
+        android:gravity="center_vertical"
+        android:background="?attr/selectableItemBackground"
+        android:paddingHorizontal="8dp" />
+
+    <TextView
+        android:id="@+id/sort_rating"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="@string/sort_rating"
+        android:textSize="15sp"
+        android:textColor="@color/textPrimary"
+        android:gravity="center_vertical"
+        android:background="?attr/selectableItemBackground"
+        android:paddingHorizontal="8dp" />
+
+    <TextView
+        android:id="@+id/sort_duration"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="@string/sort_duration"
+        android:textSize="15sp"
+        android:textColor="@color/textPrimary"
+        android:gravity="center_vertical"
+        android:background="?attr/selectableItemBackground"
+        android:paddingHorizontal="8dp" />
+
+    <TextView
+        android:id="@+id/sort_file_size"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="@string/sort_file_size"
+        android:textSize="15sp"
+        android:textColor="@color/textPrimary"
+        android:gravity="center_vertical"
+        android:background="?attr/selectableItemBackground"
+        android:paddingHorizontal="8dp" />
+
+</LinearLayout>

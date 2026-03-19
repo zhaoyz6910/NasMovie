@@ -61,4 +61,18 @@ public interface MovieDao {
 
     @Query("SELECT COUNT(*) FROM movie WHERE serverId = :serverId")
     int getCountByServerId(String serverId);
+
+    // ========== 排序查询 ==========
+
+    @Query("SELECT * FROM movie ORDER BY year DESC")
+    List<Movie> getAllByYearDesc();
+
+    @Query("SELECT * FROM movie ORDER BY rating DESC")
+    List<Movie> getAllByRatingDesc();
+
+    @Query("SELECT * FROM movie ORDER BY duration DESC")
+    List<Movie> getAllByDurationDesc();
+
+    @Query("SELECT * FROM movie ORDER BY fileSize DESC")
+    List<Movie> getAllByFileSizeDesc();
 }

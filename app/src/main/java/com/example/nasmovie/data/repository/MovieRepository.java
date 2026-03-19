@@ -26,6 +26,18 @@ public class MovieRepository {
 
     private static final String TAG = "MovieRepository";
 
+    /**
+     * 电影排序类型
+     */
+    public enum SortType {
+        TITLE_ASC,      // 标题 A-Z
+        ADD_TIME_DESC,  // 最新添加
+        YEAR_DESC,      // 年份最新
+        RATING_DESC,    // 评分最高
+        DURATION_DESC,  // 时长最长
+        FILE_SIZE_DESC  // 文件最大
+    }
+
     private final AppDatabase database;
     private final MovieDao movieDao;
     private final WatchProgressDao watchProgressDao;
@@ -47,6 +59,27 @@ public class MovieRepository {
      */
     public List<Movie> getAllMovies() {
         return movieDao.getAll();
+    }
+
+    /**
+     * 按排序类型获取电影
+     */
+    public List<Movie> getAllMovies(SortType sortType) {
+        switch (sortType) {
+            case ADD_TIME_DESC:
+                return movieDao.getAllByAddTime();
+            case YEAR_DESC:
+                return movieDao.getAllByYearDesc();
+            case RATING_DESC:
+                return movieDao.getAllByRatingDesc();
+            case DURATION_DESC:
+                return movieDao.getAllByDurationDesc();
+            case FILE_SIZE_DESC:
+                return movieDao.getAllByFileSizeDesc();
+            case TITLE_ASC:
+            default:
+                return movieDao.getAll();
+        }
     }
 
     /**

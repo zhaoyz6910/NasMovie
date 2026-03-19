@@ -37,6 +37,7 @@ public class MainContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     private OnMovieClickListener listener;
     private MovieRepository repository;
     private View headerView;
+    private String currentSortText = null;
 
     public void setHeaderView(View headerView) {
         this.headerView = headerView;
@@ -55,14 +56,36 @@ public class MainContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         void onMovieClick(Movie movie);
     }
 
+    public interface OnSortClickListener {
+        void onSortClick();
+    }
+
+    private OnSortClickListener sortClickListener;
+
     public void setOnMovieClickListener(OnMovieClickListener listener) {
         this.listener = listener;
+    }
+
+    public void setOnSortClickListener(OnSortClickListener listener) {
+        this.sortClickListener = listener;
     }
 
     public void setData(List<SectionData> sections, List<Movie> gridMovies) {
         this.sections = sections != null ? sections : new ArrayList<>();
         this.gridMovies = gridMovies != null ? gridMovies : new ArrayList<>();
         notifyDataSetChanged();
+    }
+
+    /**
+     * 设置当前排序文本
+     */
+    public void setSortText(String sortText) {
+        this.currentSortText = sortText;
+        // 只更新网格标题
+        int offset = headerView != null ? 1 : 0;
+        int sectionCount = sections.size();
+        int headerPosition = offset + sectionCount;
+        notifyItemChanged(headerPosition);
     }
 
     @Override
@@ -114,7 +137,7 @@ public class MainContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         if (holder instanceof SectionViewHolder) {
             ((SectionViewHolder) holder).bind(sections.get(adjustedPosition));
         } else if (holder instanceof GridHeaderViewHolder) {
-            ((GridHeaderViewHolder) holder).bind(R.string.section_all_movies);
+            ((GridHeaderViewHolder) holder).bind(R.string.section_all_movies, currentSortText, currentSortText != null);
         } else if (holder instanceof GridItemViewHolder) {
             int gridIndex = adjustedPosition - sectionCount - 1;
             ((GridItemViewHolder) holder).bind(gridMovies.get(gridIndex));
@@ -184,15 +207,32 @@ public class MainContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
      */
     class GridHeaderViewHolder extends RecyclerView.ViewHolder {
         private final TextView titleView;
+        private final TextView textSort;
 
         GridHeaderViewHolder(@NonNull View itemView) {
             super(itemView);
             titleView = itemView.findViewById(R.id.text_section_title);
+            textSort = itemView.findViewById(R.id.text_sort);
             itemView.findViewById(R.id.text_view_more).setVisibility(View.GONE);
         }
 
         void bind(int titleRes) {
             titleView.setText(itemView.getContext().getString(titleRes));
+        }
+
+        void bind(int titleRes, String sortText, boolean showSort) {
+            titleView.setText(itemView.getContext().getString(titleRes));
+            if (showSort && textSort != null) {
+                textSort.setVisibility(View.VISIBLE);
+                textSort.setText(sortText);
+                textSort.setOnClickListener(v -> {
+                    if (sortClickListener != null) {
+                        sortClickListener.onSortClick();
+                    }
+                });
+            } else if (textSort != null) {
+                textSort.setVisibility(View.GONE);
+            }
         }
     }
 
