@@ -13,11 +13,20 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.media3.common.C;
+import androidx.media3.common.MediaItem;
+import androidx.media3.common.PlaybackException;
+import androidx.media3.common.Player;
+import androidx.media3.common.util.UnstableApi;
+import androidx.media3.datasource.DefaultDataSource;
+import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.exoplayer.source.ProgressiveMediaSource;
+import androidx.media3.ui.PlayerView;
 
 import com.example.nasmovie.NASMovieApp;
 import com.example.nasmovie.R;
@@ -26,35 +35,30 @@ import com.example.nasmovie.data.model.SmbConfig;
 import com.example.nasmovie.data.model.WatchProgress;
 import com.example.nasmovie.data.repository.MovieRepository;
 import com.example.nasmovie.data.smb.SmbClient;
+import com.example.nasmovie.data.smb.SmbDataSource;
 import com.example.nasmovie.player.PlayerGestureHandler;
 import com.example.nasmovie.player.SubtitleManager;
-
-import org.videolan.libvlc.LibVLC;
-import org.videolan.libvlc.Media;
-import org.videolan.libvlc.MediaPlayer;
-import org.videolan.libvlc.util.VLCVideoLayout;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * VLC 视频播放器界面
- * 使用 VLC 原生支持 SMB 协议播放
+ * ExoPlayer 视频播放器界面
+ * 使用 ExoPlayer (Media3) 播放 SMB 上的视频
  */
-public class VlcPlayerActivity extends AppCompatActivity implements
+@OptIn(markerClass = UnstableApi.class)
+public class ExoPlayerActivity extends AppCompatActivity implements
     PlayerGestureHandler.GestureCallback {
 
     public static final String EXTRA_MOVIE_ID = "movie_id";
-    private static final String TAG = "VlcPlayerActivity";
+    private static final String TAG = "ExoPlayerActivity";
     private static final int HIDE_CONTROLS_DELAY = 3000;
 
-    // VLC
-    private LibVLC libVLC;
-    private MediaPlayer mediaPlayer;
-    private VLCVideoLayout videoLayout;
+    // ExoPlayer
+    private ExoPlayer player;
+    private PlayerView playerView;
 
     // UI
     private FrameLayout rootLayout;
@@ -68,7 +72,6 @@ public class VlcPlayerActivity extends AppCompatActivity implements
     private ImageButton btnPlayPause;
     private ImageButton btnBack;
     private ImageButton btnFullscreen;
-    private ProgressBar progressBar;
 
     // Subtitle
     private TextView tvSubtitle;
@@ -80,8 +83,6 @@ public class VlcPlayerActivity extends AppCompatActivity implements
     private String movieId;
     private long startPosition = 0;
     private boolean isControlsVisible = true;
-    private boolean isLocked = false;
-    private boolean isPlaying = false;
     private boolean isFullscreen = false;
 
     // Handler
@@ -103,7 +104,7 @@ public class VlcPlayerActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_vlc_player);
+        setContentView(R.layout.activity_exo_player);
 
         movieId = getIntent().getStringExtra(EXTRA_MOVIE_ID);
         if (movieId == null) {
@@ -113,7 +114,7 @@ public class VlcPlayerActivity extends AppCompatActivity implements
 
         initViews();
         initData();
-        initVLC();
+        initPlayer();
         loadMovie();
 
         hideSystemUI();
@@ -122,7 +123,7 @@ public class VlcPlayerActivity extends AppCompatActivity implements
 
     private void initViews() {
         rootLayout = findViewById(R.id.root_layout);
-        videoLayout = findViewById(R.id.video_layout);
+        playerView = findViewById(R.id.player_view);
         loadingView = findViewById(R.id.loading_view);
         controlsLayout = findViewById(R.id.controls_layout);
         topBar = findViewById(R.id.top_bar);
@@ -133,7 +134,6 @@ public class VlcPlayerActivity extends AppCompatActivity implements
         btnPlayPause = findViewById(R.id.btn_play_pause);
         btnBack = findViewById(R.id.btn_back);
         btnFullscreen = findViewById(R.id.btn_fullscreen);
-        progressBar = findViewById(R.id.progress_bar);
         tvSubtitle = findViewById(R.id.tv_subtitle);
 
         // Gesture hint views
@@ -153,9 +153,12 @@ public class VlcPlayerActivity extends AppCompatActivity implements
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser && mediaPlayer != null) {
-                    long time = (long) (progress / 100.0 * mediaPlayer.getLength());
-                    tvCurrentTime.setText(formatTime(time));
+                if (fromUser && player != null) {
+                    long duration = player.getDuration();
+                    if (duration != C.TIME_UNSET) {
+                        long time = (long) (progress / 100.0 * duration);
+                        tvCurrentTime.setText(formatTime(time));
+                    }
                 }
             }
 
@@ -166,9 +169,12 @@ public class VlcPlayerActivity extends AppCompatActivity implements
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                if (mediaPlayer != null) {
-                    long time = (long) (seekBar.getProgress() / 100.0 * mediaPlayer.getLength());
-                    mediaPlayer.setTime(time);
+                if (player != null) {
+                    long duration = player.getDuration();
+                    if (duration != C.TIME_UNSET) {
+                        long time = (long) (seekBar.getProgress() / 100.0 * duration);
+                        player.seekTo(time);
+                    }
                 }
                 startHideControlsTimer();
             }
@@ -189,9 +195,7 @@ public class VlcPlayerActivity extends AppCompatActivity implements
 
             // Handle click to toggle controls (only if no gesture was handled)
             if (!gestureHandled && event.getAction() == MotionEvent.ACTION_UP) {
-                if (!isLocked) {
-                    toggleControls();
-                }
+                toggleControls();
                 v.performClick();
             }
 
@@ -229,74 +233,59 @@ public class VlcPlayerActivity extends AppCompatActivity implements
         subtitleManager.setSubtitleView(tvSubtitle);
     }
 
-    private void initVLC() {
-        ArrayList<String> options = new ArrayList<>();
-        options.add("--no-drop-late-frames");
-        options.add("--no-skip-frames");
-        options.add("--rtsp-tcp");
-        options.add("--network-caching=3000");
-        options.add("--file-caching=3000");
-        // SMB options - using standard options that work with VLC 3.6.0
-        options.add("--smb-user=");
-        options.add("--smb-pwd=");
-
-        libVLC = new LibVLC(this, options);
-        mediaPlayer = new MediaPlayer(libVLC);
-
-        // Attach video layout
-        mediaPlayer.attachViews(videoLayout, null, false, false);
+    private void initPlayer() {
+        player = new ExoPlayer.Builder(this).build();
+        playerView.setPlayer(player);
 
         // Event listener
-        mediaPlayer.setEventListener(event -> {
-            runOnUiThread(() -> handleMediaPlayerEvent(event));
-        });
-    }
+        player.addListener(new Player.Listener() {
+            @Override
+            public void onPlaybackStateChanged(int playbackState) {
+                runOnUiThread(() -> {
+                    switch (playbackState) {
+                        case Player.STATE_BUFFERING:
+                            Log.d(TAG, "Buffering");
+                            loadingView.setVisibility(View.VISIBLE);
+                            break;
+                        case Player.STATE_READY:
+                            Log.d(TAG, "Ready");
+                            loadingView.setVisibility(View.GONE);
+                            startProgressUpdate();
+                            // Seek to start position if exists
+                            if (startPosition > 0) {
+                                player.seekTo(startPosition);
+                                startPosition = 0;
+                            }
+                            break;
+                        case Player.STATE_ENDED:
+                            Log.d(TAG, "Ended");
+                            saveProgress();
+                            finish();
+                            break;
+                        case Player.STATE_IDLE:
+                            Log.d(TAG, "Idle");
+                            break;
+                    }
+                });
+            }
 
-    private void handleMediaPlayerEvent(MediaPlayer.Event event) {
-        switch (event.type) {
-            case MediaPlayer.Event.Opening:
-                Log.d(TAG, "Opening media");
-                break;
-            case MediaPlayer.Event.Playing:
-                Log.d(TAG, "Media playing");
-                loadingView.setVisibility(View.GONE);
-                isPlaying = true;
-                btnPlayPause.setImageResource(R.drawable.ic_pause);
-                startProgressUpdate();
-                // Seek to start position if exists (after video is ready)
-                if (startPosition > 0) {
-                    mediaPlayer.setTime(startPosition);
-                }
-                break;
-            case MediaPlayer.Event.Paused:
-                Log.d(TAG, "Media paused");
-                isPlaying = false;
-                btnPlayPause.setImageResource(R.drawable.ic_play);
-                break;
-            case MediaPlayer.Event.Stopped:
-                Log.d(TAG, "Media stopped");
-                isPlaying = false;
-                btnPlayPause.setImageResource(R.drawable.ic_play);
-                break;
-            case MediaPlayer.Event.EndReached:
-                Log.d(TAG, "Media ended");
-                saveProgress();
-                finish();
-                break;
-            case MediaPlayer.Event.Buffering:
-                int buffering = (int) event.getBuffering();
-                Log.d(TAG, "Buffering: " + buffering + "%");
-                if (buffering < 100) {
-                    loadingView.setVisibility(View.VISIBLE);
-                } else {
-                    loadingView.setVisibility(View.GONE);
-                }
-                break;
-            case MediaPlayer.Event.EncounteredError:
-                Log.e(TAG, "Media error");
-                loadingView.setVisibility(View.GONE);
-                break;
-        }
+            @Override
+            public void onIsPlayingChanged(boolean isPlaying) {
+                runOnUiThread(() -> {
+                    if (isPlaying) {
+                        btnPlayPause.setImageResource(R.drawable.ic_pause);
+                    } else {
+                        btnPlayPause.setImageResource(R.drawable.ic_play);
+                    }
+                });
+            }
+
+            @Override
+            public void onPlayerError(PlaybackException error) {
+                Log.e(TAG, "Player error: " + error.getMessage(), error);
+                runOnUiThread(() -> loadingView.setVisibility(View.GONE));
+            }
+        });
     }
 
     private void loadMovie() {
@@ -333,24 +322,24 @@ public class VlcPlayerActivity extends AppCompatActivity implements
                     return;
                 }
 
-                // Build SMB URL with authentication
-                String smbUrl = buildSmbUrl(config, movie.getVideoPath());
-                Log.d(TAG, "Playing SMB video from server: " + config.getHost());
+                // Build SMB URI
+                String smbUri = buildSmbUri(config, movie.getVideoPath());
+                Log.d(TAG, "Playing SMB video: " + smbUri);
 
                 // Load subtitles
                 loadSubtitles(config);
 
                 runOnUiThread(() -> {
-                    // Create media and play
-                    Media media = new Media(libVLC, Uri.parse(smbUrl));
-                    media.setHWDecoderEnabled(true, false);
-                    media.addOption(":network-caching=3000");
-                    media.addOption(":file-caching=3000");
+                    // Create SMB DataSource Factory
+                    SmbDataSource.Factory smbDataSourceFactory = new SmbDataSource.Factory(config);
 
-                    mediaPlayer.setMedia(media);
-                    media.release();
+                    // Create MediaSource
+                    ProgressiveMediaSource mediaSource = new ProgressiveMediaSource.Factory(smbDataSourceFactory)
+                        .createMediaSource(MediaItem.fromUri(Uri.parse(smbUri)));
 
-                    mediaPlayer.play();
+                    player.setMediaSource(mediaSource);
+                    player.prepare();
+                    player.setPlayWhenReady(true);
                 });
 
             } catch (Exception e) {
@@ -360,64 +349,35 @@ public class VlcPlayerActivity extends AppCompatActivity implements
         }).start();
     }
 
-    private String buildSmbUrl(SmbConfig config, String videoPath) {
-        StringBuilder url = new StringBuilder();
-        url.append("smb://");
-
-        // Add credentials if not anonymous
-        if (!config.isAnonymous() && config.getUsername() != null && !config.getUsername().isEmpty()) {
-            url.append(encodeSmbUsername(config.getUsername()));
-            if (config.getPassword() != null && !config.getPassword().isEmpty()) {
-                url.append(":").append(encodeSmbPassword(config.getPassword()));
-            }
-            url.append("@");
-        }
-
-        // Add host
-        url.append(config.getHost());
+    private String buildSmbUri(SmbConfig config, String videoPath) {
+        StringBuilder uri = new StringBuilder();
+        uri.append("smb://");
+        uri.append(config.getHost());
 
         // Add port if not default
         if (config.getPort() != 445 && config.getPort() > 0) {
-            url.append(":").append(config.getPort());
+            uri.append(":").append(config.getPort());
         }
 
         // Add share and path
-        url.append("/").append(config.getShareName());
+        uri.append("/").append(config.getShareName());
 
         // Add video path
         String normalizedPath = videoPath.replace('\\', '/');
         if (!normalizedPath.startsWith("/")) {
-            url.append("/");
+            uri.append("/");
         }
-        url.append(normalizedPath);
+        uri.append(normalizedPath);
 
-        return url.toString();
-    }
-
-    private String encodeSmbUsername(String username) {
-        // URL encode special characters
-        return username.replace("@", "%40")
-                       .replace(":", "%3A")
-                       .replace("/", "%2F");
-    }
-
-    private String encodeSmbPassword(String password) {
-        // URL encode special characters
-        return password.replace("@", "%40")
-                       .replace(":", "%3A")
-                       .replace("/", "%2F")
-                       .replace("?", "%3F")
-                       .replace("#", "%23");
+        return uri.toString();
     }
 
     private void loadSubtitles(SmbConfig config) {
         List<String> subtitlePaths = movie.getSubtitlePathList();
         if (subtitlePaths != null && !subtitlePaths.isEmpty()) {
-            // Download the first subtitle file
             for (String subtitlePath : subtitlePaths) {
                 String localPath = downloadSubtitle(subtitlePath, config);
                 if (localPath != null) {
-                    subtitleManager.setSmbClient(null); // We'll load from local file
                     subtitleManager.setSubtitleView(tvSubtitle);
                     subtitleManager.loadSubtitle(localPath);
                     break;
@@ -427,7 +387,6 @@ public class VlcPlayerActivity extends AppCompatActivity implements
     }
 
     private String downloadSubtitle(String smbPath, SmbConfig config) {
-        // Generate local cache path
         String fileName = "subtitle_" + Math.abs(smbPath.hashCode()) + "." + getExtension(smbPath);
         File cacheFile = new File(getCacheDir(), fileName);
 
@@ -484,12 +443,12 @@ public class VlcPlayerActivity extends AppCompatActivity implements
     }
 
     private void togglePlayPause() {
-        if (mediaPlayer == null) return;
+        if (player == null) return;
 
-        if (mediaPlayer.isPlaying()) {
-            mediaPlayer.pause();
+        if (player.isPlaying()) {
+            player.pause();
         } else {
-            mediaPlayer.play();
+            player.play();
         }
         startHideControlsTimer();
     }
@@ -497,11 +456,9 @@ public class VlcPlayerActivity extends AppCompatActivity implements
     private void toggleFullscreen() {
         isFullscreen = !isFullscreen;
         if (isFullscreen) {
-            // Switch to landscape
             setRequestedOrientation(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
             btnFullscreen.setImageResource(R.drawable.ic_fullscreen_exit);
         } else {
-            // Switch to portrait
             setRequestedOrientation(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
             btnFullscreen.setImageResource(R.drawable.ic_fullscreen);
         }
@@ -517,14 +474,10 @@ public class VlcPlayerActivity extends AppCompatActivity implements
     }
 
     private void showControls() {
-        if (isLocked) return;
-
         isControlsVisible = true;
         topBar.setVisibility(View.VISIBLE);
         controlsLayout.setVisibility(View.VISIBLE);
         startHideControlsTimer();
-
-        // 字幕上移，避免被控制栏遮挡
         adjustSubtitlePosition(true);
     }
 
@@ -533,8 +486,6 @@ public class VlcPlayerActivity extends AppCompatActivity implements
         topBar.setVisibility(View.GONE);
         controlsLayout.setVisibility(View.GONE);
         handler.removeCallbacks(hideControlsRunnable);
-
-        // 字幕下移，靠近屏幕底部
         adjustSubtitlePosition(false);
     }
 
@@ -552,12 +503,12 @@ public class VlcPlayerActivity extends AppCompatActivity implements
     }
 
     private void updateProgress() {
-        if (mediaPlayer == null) return;
+        if (player == null) return;
 
-        long currentTime = mediaPlayer.getTime();
-        long totalTime = mediaPlayer.getLength();
+        long currentTime = player.getCurrentPosition();
+        long totalTime = player.getDuration();
 
-        if (totalTime > 0) {
+        if (totalTime != C.TIME_UNSET && totalTime > 0) {
             int progress = (int) ((currentTime * 100) / totalTime);
             seekBar.setProgress(progress);
             tvTotalTime.setText(formatTime(totalTime));
@@ -589,17 +540,15 @@ public class VlcPlayerActivity extends AppCompatActivity implements
     }
 
     private void saveProgress() {
-        if (mediaPlayer == null || movieId == null) return;
+        if (player == null || movieId == null) return;
 
-        long position = mediaPlayer.getTime();
-        long durationMs = mediaPlayer.getLength();
+        long position = player.getCurrentPosition();
+        long durationMs = player.getDuration();
 
-        if (position > 0 && durationMs > 0) {
-            // Save to database in background thread
+        if (position > 0 && durationMs != C.TIME_UNSET && durationMs > 0) {
             new Thread(() -> {
                 repository.saveWatchProgress(movieId, position, durationMs);
-                
-                // 如果电影的时长信息缺失，或者不准确，更新它（毫秒转分钟）
+
                 if (movie != null && (movie.getDuration() <= 0)) {
                     int durationMinutes = (int) (durationMs / (1000 * 60));
                     if (durationMinutes > 0) {
@@ -613,13 +562,12 @@ public class VlcPlayerActivity extends AppCompatActivity implements
     }
 
     private void applyScale() {
-        videoLayout.setScaleX(currentScale);
-        videoLayout.setScaleY(currentScale);
+        playerView.setScaleX(currentScale);
+        playerView.setScaleY(currentScale);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        // Handle brightness, volume, seek gestures first
         if (gestureHandler != null) {
             boolean handled = gestureHandler.onTouchEvent(event);
             if (handled) {
@@ -627,7 +575,6 @@ public class VlcPlayerActivity extends AppCompatActivity implements
             }
         }
 
-        // Let scale gesture detector handle zoom
         if (scaleGestureDetector != null) {
             scaleGestureDetector.onTouchEvent(event);
         }
@@ -639,27 +586,10 @@ public class VlcPlayerActivity extends AppCompatActivity implements
     protected void onResume() {
         super.onResume();
         hideSystemUI();
-        // 从后台返回时，重新加载播放
-        if (mediaPlayer != null) {
-            // 重新附加视频视图
-            if (videoLayout != null) {
-                mediaPlayer.detachViews();
-                mediaPlayer.attachViews(videoLayout, null, false, false);
-            }
-            if (!mediaPlayer.isPlaying()) {
-                // 如果播放器已停止，需要重新加载媒体
-                if (mediaPlayer.getMedia() == null && movie != null) {
-                    // 媒体已释放，重新播放
-                    playMovie();
-                } else {
-                    // 媒体还在，只是暂停了，恢复播放
-                    mediaPlayer.play();
-                    isPlaying = true;
-                    btnPlayPause.setImageResource(R.drawable.ic_pause);
-                }
-            }
-            startProgressUpdate();
+        if (player != null) {
+            player.play();
         }
+        startProgressUpdate();
     }
 
     @Override
@@ -667,10 +597,8 @@ public class VlcPlayerActivity extends AppCompatActivity implements
         super.onPause();
         saveProgress();
         stopProgressUpdate();
-        // 切到后台时暂停播放，但不要释放资源
-        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
-            mediaPlayer.pause();
-            isPlaying = true; // 标记为应该播放状态，以便恢复
+        if (player != null && player.isPlaying()) {
+            player.pause();
         }
     }
 
@@ -681,16 +609,9 @@ public class VlcPlayerActivity extends AppCompatActivity implements
         stopProgressUpdate();
         handler.removeCallbacks(hideControlsRunnable);
 
-        if (mediaPlayer != null) {
-            mediaPlayer.stop();
-            mediaPlayer.detachViews();
-            mediaPlayer.release();
-            mediaPlayer = null;
-        }
-
-        if (libVLC != null) {
-            libVLC.release();
-            libVLC = null;
+        if (player != null) {
+            player.release();
+            player = null;
         }
     }
 
@@ -711,10 +632,6 @@ public class VlcPlayerActivity extends AppCompatActivity implements
         );
     }
 
-    /**
-     * 设置屏幕常亮
-     * @param keepOn true 保持屏幕常亮, false 恢复系统自动锁屏
-     */
     private void keepScreenOn(boolean keepOn) {
         if (keepOn) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -727,12 +644,12 @@ public class VlcPlayerActivity extends AppCompatActivity implements
 
     @Override
     public long getCurrentPosition() {
-        return mediaPlayer != null ? mediaPlayer.getTime() : 0;
+        return player != null ? player.getCurrentPosition() : 0;
     }
 
     @Override
     public long getDuration() {
-        return mediaPlayer != null ? mediaPlayer.getLength() : 0;
+        return player != null ? player.getDuration() : 0;
     }
 
     @Override
@@ -747,7 +664,6 @@ public class VlcPlayerActivity extends AppCompatActivity implements
 
     @Override
     public void onSeekPreview(long position, long delta) {
-        // 显示目标时间和偏移量，例如：05:30 (+00:30)
         String targetTime = formatTime(position);
         String offset = formatTime(Math.abs(delta));
         String sign = delta >= 0 ? "+" : "-";
@@ -757,8 +673,8 @@ public class VlcPlayerActivity extends AppCompatActivity implements
 
     @Override
     public void onSeek(long position) {
-        if (mediaPlayer != null) {
-            mediaPlayer.setTime(position);
+        if (player != null) {
+            player.seekTo(position);
             showGestureHint("跳转到: " + formatTime(position));
         }
     }
@@ -781,19 +697,14 @@ public class VlcPlayerActivity extends AppCompatActivity implements
         }
     }
 
-    /**
-     * 调整字幕位置
-     * @param controlsVisible 控制栏是否显示
-     */
     private void adjustSubtitlePosition(boolean controlsVisible) {
         if (tvSubtitle == null) return;
 
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) tvSubtitle.getLayoutParams();
         int targetMargin = controlsVisible
-            ? (int) (95 * getResources().getDisplayMetrics().density)  // 控制栏显示时
-            : (int) (32 * getResources().getDisplayMetrics().density);  // 控制栏隐藏时
+            ? (int) (95 * getResources().getDisplayMetrics().density)
+            : (int) (32 * getResources().getDisplayMetrics().density);
 
-        // 使用动画过渡
         ValueAnimator animator = ValueAnimator.ofInt(params.bottomMargin, targetMargin);
         animator.setDuration(200);
         animator.addUpdateListener(animation -> {

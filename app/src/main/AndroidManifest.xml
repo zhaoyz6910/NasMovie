@@ -44,9 +44,9 @@
             </intent-filter>
         </activity>
 
-        <!-- 视频播放器 (VLC) -->
+        <!-- 视频播放器 (ExoPlayer) -->
         <activity
-            android:name=".ui.VlcPlayerActivity"
+            android:name=".ui.ExoPlayerActivity"
             android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize"
             android:label="@string/video_player"
             android:screenOrientation="sensorPortrait"

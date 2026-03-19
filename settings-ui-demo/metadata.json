@@ -1,5 +1,0 @@
-{
-  "name": "Settings UI Demo",
-  "description": "A mobile settings interface with dark mode, sections for server management, security, and a bottom navigation bar.",
-  "requestFramePermissions": []
-}

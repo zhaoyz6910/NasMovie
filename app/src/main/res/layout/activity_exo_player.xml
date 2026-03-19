@@ -6,12 +6,14 @@
     android:layout_height="match_parent"
     android:background="@android:color/black">
 
-    <!-- VLC Video Surface -->
-    <org.videolan.libvlc.util.VLCVideoLayout
-        android:id="@+id/video_layout"
+    <!-- ExoPlayer PlayerView -->
+    <androidx.media3.ui.PlayerView
+        android:id="@+id/player_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center" />
+        app:use_controller="false"
+        app:resize_mode="fit"
+        app:surface_type="surface_view" />
 
     <!-- Loading View -->
     <LinearLayout
@@ -195,4 +197,4 @@
 
     </FrameLayout>
 
-    </FrameLayout>
+</FrameLayout>

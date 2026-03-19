@@ -271,8 +271,8 @@ public class DetailFragment extends Fragment {
 
     private void playMovie() {
         if (movie == null) return;
-        Intent intent = new Intent(getContext(), VlcPlayerActivity.class);
-        intent.putExtra(VlcPlayerActivity.EXTRA_MOVIE_ID, movie.getId());
+        Intent intent = new Intent(getContext(), ExoPlayerActivity.class);
+        intent.putExtra(ExoPlayerActivity.EXTRA_MOVIE_ID, movie.getId());
         startActivity(intent);
     }
 
