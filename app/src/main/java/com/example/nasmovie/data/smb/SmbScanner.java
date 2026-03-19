@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -390,7 +391,7 @@ public class SmbScanner {
      */
     private boolean processFile(DiskShare share, SmbFileInfo fileInfo, String parentPath) {
         String fileName = fileInfo.getName();
-        String lowerName = fileName.toLowerCase();
+        String lowerName = fileName.toLowerCase(Locale.ROOT);
         String baseName = getBaseName(fileName);
 
         Log.d(TAG, "Processing file: " + fileName + " in " + parentPath);
@@ -419,7 +420,7 @@ public class SmbScanner {
             }
 
             movies.add(movie);
-            movieMap.put(baseName.toLowerCase(), movie);
+            movieMap.put(baseName.toLowerCase(Locale.ROOT), movie);
 
             notifyVideoFound(fileInfo, movie);
 
@@ -431,7 +432,7 @@ public class SmbScanner {
         // 检查是否是 NFO 文件
         if (lowerName.endsWith(".nfo")) {
             String nfoBaseName = getBaseName(fileName);
-            ScanResult.ScannedMovie movie = movieMap.get(nfoBaseName.toLowerCase());
+            ScanResult.ScannedMovie movie = movieMap.get(nfoBaseName.toLowerCase(Locale.ROOT));
             if (movie != null && movie.getNfoPath() == null) {
                 movie.setNfoPath(fileInfo.getPath());
                 nfoFiles++;
@@ -527,7 +528,7 @@ public class SmbScanner {
         if (fileName == null || !fileName.contains(".")) {
             return false;
         }
-        String ext = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+        String ext = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase(Locale.ROOT);
         return VIDEO_EXTENSIONS.contains(ext);
     }
 
@@ -536,7 +537,7 @@ public class SmbScanner {
      */
     private boolean isPosterFile(String fileName) {
         if (fileName == null) return false;
-        String lowerName = fileName.toLowerCase();
+        String lowerName = fileName.toLowerCase(Locale.ROOT);
         for (String posterName : POSTER_NAMES) {
             if (lowerName.equals(posterName)) {
                 return true;
@@ -552,7 +553,7 @@ public class SmbScanner {
         if (fileName == null || !fileName.contains(".")) {
             return "";
         }
-        return fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+        return fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase(Locale.ROOT);
     }
 
     /**

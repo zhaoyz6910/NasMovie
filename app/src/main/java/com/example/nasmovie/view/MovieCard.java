@@ -18,6 +18,7 @@ import com.example.nasmovie.R;
 import com.example.nasmovie.data.model.Movie;
 
 import java.io.File;
+import java.util.Locale;
 
 /**
  * 通用电影卡片组件
@@ -99,7 +100,7 @@ public class MovieCard extends FrameLayout {
         // 处理评分 (使用 movie.getRating() 字段)
         boolean hasRating = movie.getRating() > 0;
         if (hasRating) {
-            tvRating.setText(String.format("%.1f", movie.getRating()));
+            tvRating.setText(String.format(Locale.US, "%.1f", movie.getRating()));
             if (ratingBadge != null) ratingBadge.setVisibility(View.VISIBLE);
         } else {
             if (ratingBadge != null) ratingBadge.setVisibility(View.GONE);

@@ -29,6 +29,7 @@ import com.google.android.material.button.MaterialButton;
 
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * 电影详情 Fragment
@@ -253,7 +254,7 @@ public class DetailFragment extends Fragment {
     private void displayProgress(WatchProgress progress) {
         if (progress != null && progress.getPercentage() > 0 && !progress.isCompleted()) {
             cardProgress.setVisibility(View.VISIBLE);
-            tvProgress.setText(String.format("已观看 %d%%", progress.getPercentage()));
+            tvProgress.setText(String.format(Locale.US, "已观看 %d%%", progress.getPercentage()));
             progressBar.setProgress(progress.getPercentage());
             btnPlay.setText(R.string.resume_play);
         } else {

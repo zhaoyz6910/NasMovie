@@ -5,6 +5,7 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.media3.common.C;
+import androidx.media3.common.util.UnstableApi;
 import androidx.media3.datasource.BaseDataSource;
 import androidx.media3.datasource.DataSource;
 import androidx.media3.datasource.DataSpec;
@@ -29,6 +30,7 @@ import java.util.EnumSet;
  * ExoPlayer 的 SMB 数据源
  * 实现 DataSource 接口，让 ExoPlayer 可以直接播放 SMB 上的视频
  */
+@UnstableApi
 public class SmbDataSource extends BaseDataSource {
 
     private static final String TAG = "SmbDataSource";
@@ -252,6 +254,7 @@ public class SmbDataSource extends BaseDataSource {
     /**
      * DataSource 工厂
      */
+    @UnstableApi
     public static class Factory implements DataSource.Factory {
 
         private final SmbConfig config;

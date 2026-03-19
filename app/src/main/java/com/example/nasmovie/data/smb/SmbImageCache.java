@@ -11,6 +11,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
+import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -232,7 +233,7 @@ public class SmbImageCache {
             String ext = "";
             int dotIndex = smbPath.lastIndexOf('.');
             if (dotIndex > 0) {
-                ext = smbPath.substring(dotIndex).toLowerCase();
+                ext = smbPath.substring(dotIndex).toLowerCase(Locale.ROOT);
                 if (ext.length() > 5) ext = ""; // 扩展名太长可能是路径的一部分
             }
             return hexString.toString() + ext;

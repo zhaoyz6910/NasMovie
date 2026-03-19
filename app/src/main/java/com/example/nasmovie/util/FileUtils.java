@@ -4,6 +4,7 @@ import java.io.File;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.DecimalFormat;
+import java.util.Locale;
 
 /**
  * 文件工具类
@@ -17,7 +18,7 @@ public class FileUtils {
         if (filename == null || !filename.contains(".")) {
             return "";
         }
-        return filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
+        return filename.substring(filename.lastIndexOf(".") + 1).toLowerCase(Locale.ROOT);
     }
 
     /**
@@ -38,9 +39,9 @@ public class FileUtils {
         if (bytes < 1024) {
             return bytes + " B";
         } else if (bytes < 1024 * 1024) {
-            return String.format("%.1f KB", bytes / 1024.0);
+            return String.format(Locale.getDefault(), "%.1f KB", bytes / 1024.0);
         } else if (bytes < 1024 * 1024 * 1024) {
-            return String.format("%.1f MB", bytes / (1024.0 * 1024));
+            return String.format(Locale.getDefault(), "%.1f MB", bytes / (1024.0 * 1024));
         } else {
             DecimalFormat df = new DecimalFormat("#.##");
             return df.format(bytes / (1024.0 * 1024 * 1024)) + " GB";
@@ -57,9 +58,9 @@ public class FileUtils {
         int secs = seconds % 60;
 
         if (hours > 0) {
-            return String.format("%d:%02d:%02d", hours, minutes, secs);
+            return String.format(Locale.getDefault(), "%d:%02d:%02d", hours, minutes, secs);
         } else {
-            return String.format("%02d:%02d", minutes, secs);
+            return String.format(Locale.getDefault(), "%02d:%02d", minutes, secs);
         }
     }
 
@@ -71,9 +72,9 @@ public class FileUtils {
         int mins = minutes % 60;
 
         if (hours > 0) {
-            return String.format("%d小时%d分钟", hours, mins);
+            return String.format(Locale.getDefault(), "%d小时%d分钟", hours, mins);
         } else {
-            return String.format("%d分钟", mins);
+            return String.format(Locale.getDefault(), "%d分钟", mins);
         }
     }
 
@@ -123,7 +124,7 @@ public class FileUtils {
      */
     public static boolean isPosterImage(String filename) {
         if (filename == null) return false;
-        String lowerName = filename.toLowerCase();
+        String lowerName = filename.toLowerCase(Locale.ROOT);
         return "poster.jpg".equals(lowerName) || "poster.png".equals(lowerName)
             || "folder.jpg".equals(lowerName) || "folder.png".equals(lowerName)
             || lowerName.startsWith("poster.") || lowerName.startsWith("folder.");

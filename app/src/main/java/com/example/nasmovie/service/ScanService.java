@@ -20,6 +20,7 @@ import com.example.nasmovie.util.FileUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -246,7 +247,7 @@ public class ScanService {
             String p1 = null, p2 = null, p3 = null, p4 = null, p5 = null, other = null;
 
             for (SmbFileInfo file : files) {
-                String lowerName = file.getName().toLowerCase();
+                String lowerName = file.getName().toLowerCase(Locale.ROOT);
                 if (file.isDirectory()) {
                     subDirs.add(file);
                     continue;

@@ -12,6 +12,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,7 +64,7 @@ public class SubtitleParser {
             return null;
         }
 
-        String ext = extension.toLowerCase();
+        String ext = extension.toLowerCase(Locale.ROOT);
 
         // 检测编码
         Charset charset = detectCharset(data);

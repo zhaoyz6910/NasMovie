@@ -1,5 +1,7 @@
 package com.example.nasmovie.data.smb;
 
+import java.util.Locale;
+
 /**
  * SMB文件信息
  */
@@ -61,7 +63,7 @@ public class SmbFileInfo {
         if (name == null || !name.contains(".")) {
             return "";
         }
-        return name.substring(name.lastIndexOf(".") + 1).toLowerCase();
+        return name.substring(name.lastIndexOf(".") + 1).toLowerCase(Locale.ROOT);
     }
 
     /**
@@ -92,7 +94,7 @@ public class SmbFileInfo {
      * 包括：poster.jpg, poster.png, folder.jpg, folder.png, cover.jpg, cover.png, fanart.jpg, fanart.png, backdrop.jpg, backdrop.png
      */
     public boolean isPosterImage() {
-        String lowerName = name != null ? name.toLowerCase() : "";
+        String lowerName = name != null ? name.toLowerCase(Locale.ROOT) : "";
         return "poster.jpg".equals(lowerName) || "poster.png".equals(lowerName)
             || "folder.jpg".equals(lowerName) || "folder.png".equals(lowerName)
             || "cover.jpg".equals(lowerName) || "cover.png".equals(lowerName)
@@ -105,7 +107,7 @@ public class SmbFileInfo {
      * 包括：thumb.jpg, thumb.png
      */
     public boolean isThumbPoster() {
-        String lowerName = name != null ? name.toLowerCase() : "";
+        String lowerName = name != null ? name.toLowerCase(Locale.ROOT) : "";
         return "thumb.jpg".equals(lowerName) || "thumb.png".equals(lowerName);
     }
 

@@ -1,6 +1,7 @@
 package com.example.nasmovie.data.smb;
 
 import java.util.List;
+import java.util.Locale;
 
 /**
  * SMB 扫描结果类
@@ -115,7 +116,7 @@ public class ScanResult {
     public String getScanSpeed() {
         if (scanTime <= 0) return "0 files/s";
         double filesPerSecond = (double) totalFiles / (scanTime / 1000.0);
-        return String.format("%.1f files/s", filesPerSecond);
+        return String.format(Locale.US, "%.1f files/s", filesPerSecond);
     }
 
     /**
@@ -125,7 +126,7 @@ public class ScanResult {
         if (scanTime < 1000) {
             return scanTime + "ms";
         } else if (scanTime < 60000) {
-            return String.format("%.1fs", scanTime / 1000.0);
+            return String.format(Locale.US, "%.1fs", scanTime / 1000.0);
         } else {
             long minutes = scanTime / 60000;
             long seconds = (scanTime % 60000) / 1000;

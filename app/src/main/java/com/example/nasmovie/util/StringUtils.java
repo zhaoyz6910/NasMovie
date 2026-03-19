@@ -3,6 +3,7 @@ package com.example.nasmovie.util;
 import android.text.TextUtils;
 
 import java.util.List;
+import java.util.Locale;
 
 /**
  * 字符串工具类
@@ -124,7 +125,7 @@ public class StringUtils {
      * 格式化评分（保留一位小数）
      */
     public static String formatRating(float rating) {
-        return String.format("%.1f", rating);
+        return String.format(Locale.getDefault(), "%.1f", rating);
     }
 
     /**
@@ -160,6 +161,6 @@ public class StringUtils {
      */
     public static boolean containsIgnoreCase(String str, String keyword) {
         if (isEmpty(str) || isEmpty(keyword)) return false;
-        return str.toLowerCase().contains(keyword.toLowerCase());
+        return str.toLowerCase(Locale.ROOT).contains(keyword.toLowerCase(Locale.ROOT));
     }
 }

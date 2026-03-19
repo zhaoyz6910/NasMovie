@@ -26,6 +26,7 @@ import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -121,9 +122,9 @@ public class FavoritesFragment extends Fragment implements
             adapter.setMovies(allFavorites);
         } else {
             List<Movie> filtered = new ArrayList<>();
-            String lowerQuery = query.toLowerCase();
+            String lowerQuery = query.toLowerCase(Locale.ROOT);
             for (Movie movie : allFavorites) {
-                if (movie.getTitle().toLowerCase().contains(lowerQuery)) {
+                if (movie.getTitle().toLowerCase(Locale.ROOT).contains(lowerQuery)) {
                     filtered.add(movie);
                 }
             }

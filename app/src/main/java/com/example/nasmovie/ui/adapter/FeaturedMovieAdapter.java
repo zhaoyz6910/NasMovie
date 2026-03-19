@@ -15,6 +15,7 @@ import com.example.nasmovie.util.SmbImageLoader;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * 特色电影轮播适配器
@@ -97,7 +98,7 @@ public class FeaturedMovieAdapter extends RecyclerView.Adapter<FeaturedMovieAdap
 
             // 设置评分
             if (movie.getRating() > 0) {
-                textRating.setText(String.format("%.1f", movie.getRating()));
+                textRating.setText(String.format(Locale.US, "%.1f", movie.getRating()));
                 textRating.setVisibility(View.VISIBLE);
             } else {
                 textRating.setVisibility(View.GONE);

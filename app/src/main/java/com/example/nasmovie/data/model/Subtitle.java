@@ -1,5 +1,7 @@
 package com.example.nasmovie.data.model;
 
+import java.util.Locale;
+
 /**
  * 字幕文件信息
  */
@@ -19,7 +21,7 @@ public class Subtitle {
         this.path = path;
         this.name = name;
         if (name != null && name.contains(".")) {
-            this.extension = name.substring(name.lastIndexOf(".") + 1).toLowerCase();
+            this.extension = name.substring(name.lastIndexOf(".") + 1).toLowerCase(Locale.ROOT);
         }
     }
 
@@ -39,7 +41,7 @@ public class Subtitle {
     public void setName(String name) {
         this.name = name;
         if (name != null && name.contains(".")) {
-            this.extension = name.substring(name.lastIndexOf(".") + 1).toLowerCase();
+            this.extension = name.substring(name.lastIndexOf(".") + 1).toLowerCase(Locale.ROOT);
         }
     }
 

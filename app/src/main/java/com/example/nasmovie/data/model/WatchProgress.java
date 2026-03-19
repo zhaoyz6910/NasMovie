@@ -6,6 +6,8 @@ import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
+import java.util.Locale;
+
 /**
  * 观看进度实体
  */
@@ -106,9 +108,9 @@ public class WatchProgress {
         int secs = seconds % 60;
 
         if (hours > 0) {
-            return String.format("%d:%02d:%02d", hours, minutes, secs);
+            return String.format(Locale.US, "%d:%02d:%02d", hours, minutes, secs);
         } else {
-            return String.format("%02d:%02d", minutes, secs);
+            return String.format(Locale.US, "%02d:%02d", minutes, secs);
         }
     }
 }

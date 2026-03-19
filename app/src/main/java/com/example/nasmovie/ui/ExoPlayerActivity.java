@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * ExoPlayer 视频播放器界面
@@ -441,7 +442,7 @@ public class ExoPlayerActivity extends AppCompatActivity implements
         if (path == null || !path.contains(".")) {
             return "srt";
         }
-        return path.substring(path.lastIndexOf(".") + 1).toLowerCase();
+        return path.substring(path.lastIndexOf(".") + 1).toLowerCase(Locale.ROOT);
     }
 
     private void togglePlayPause() {
@@ -535,9 +536,9 @@ public class ExoPlayerActivity extends AppCompatActivity implements
         minutes = minutes % 60;
 
         if (hours > 0) {
-            return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+            return String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds);
         } else {
-            return String.format("%02d:%02d", minutes, seconds);
+            return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds);
         }
     }
 

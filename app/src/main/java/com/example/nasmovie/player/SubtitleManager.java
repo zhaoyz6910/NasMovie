@@ -13,6 +13,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * 字幕管理类
@@ -215,6 +216,6 @@ public class SubtitleManager {
         if (path == null || !path.contains(".")) {
             return "";
         }
-        return path.substring(path.lastIndexOf(".") + 1).toLowerCase();
+        return path.substring(path.lastIndexOf(".") + 1).toLowerCase(Locale.ROOT);
     }
 }

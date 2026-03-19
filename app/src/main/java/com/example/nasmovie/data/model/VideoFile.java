@@ -1,5 +1,7 @@
 package com.example.nasmovie.data.model;
 
+import java.util.Locale;
+
 /**
  * 视频文件信息
  */
@@ -17,7 +19,7 @@ public class VideoFile {
         this.path = path;
         this.name = name;
         if (name != null && name.contains(".")) {
-            this.extension = name.substring(name.lastIndexOf(".") + 1).toLowerCase();
+            this.extension = name.substring(name.lastIndexOf(".") + 1).toLowerCase(Locale.ROOT);
         }
     }
 
@@ -37,7 +39,7 @@ public class VideoFile {
     public void setName(String name) {
         this.name = name;
         if (name != null && name.contains(".")) {
-            this.extension = name.substring(name.lastIndexOf(".") + 1).toLowerCase();
+            this.extension = name.substring(name.lastIndexOf(".") + 1).toLowerCase(Locale.ROOT);
         }
     }
 
@@ -88,11 +90,11 @@ public class VideoFile {
         if (size < 1024) {
             return size + " B";
         } else if (size < 1024 * 1024) {
-            return String.format("%.1f KB", size / 1024.0);
+            return String.format(Locale.getDefault(), "%.1f KB", size / 1024.0);
         } else if (size < 1024 * 1024 * 1024) {
-            return String.format("%.1f MB", size / (1024.0 * 1024));
+            return String.format(Locale.getDefault(), "%.1f MB", size / (1024.0 * 1024));
         } else {
-            return String.format("%.1f GB", size / (1024.0 * 1024 * 1024));
+            return String.format(Locale.getDefault(), "%.1f GB", size / (1024.0 * 1024 * 1024));
         }
     }
 }
