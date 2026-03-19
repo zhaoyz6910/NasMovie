@@ -1,13 +1,16 @@
 package com.example.nasmovie.ui;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.example.nasmovie.NASMovieApp;
 import com.example.nasmovie.R;
+import com.example.nasmovie.util.PreferenceManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
@@ -19,6 +22,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNavigation;
+    private View rootView;
 
     private HomeFragment homeFragment;
     private FavoritesFragment favoritesFragment;
@@ -32,16 +36,46 @@ public class MainActivity extends AppCompatActivity {
     private long lastBackPressTime = 0;
     private static final long BACK_PRESS_INTERVAL = 2000; // 2 秒内再次按返回键退出
 
+    private PreferenceManager preferenceManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        preferenceManager = new PreferenceManager(this);
+        rootView = findViewById(android.R.id.content);
+
+        // 如果应用锁启用，先隐藏内容，防止锁屏前闪现
+        if (preferenceManager.isLockEnabled()) {
+            rootView.setVisibility(View.INVISIBLE);
+        }
 
         initViews();
 
         // 如果是第一次启动，加载首页 Fragment
         if (savedInstanceState == null) {
             loadHomeFragment();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // 切换到后台时隐藏内容，防止返回时闪现
+        if (preferenceManager.isLockEnabled()) {
+            rootView.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // 如果应用锁启用，延迟显示内容（等待锁屏覆盖）
+        if (preferenceManager.isLockEnabled()) {
+            rootView.postDelayed(() -> {
+                rootView.setVisibility(View.VISIBLE);
+            }, 200);
         }
     }
 

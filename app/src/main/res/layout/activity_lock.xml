@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -19,7 +20,7 @@
             android:layout_width="64dp"
             android:layout_height="64dp"
             android:src="@drawable/ic_lock"
-            android:tint="#1E75D3" />
+            app:tint="#1E75D3" />
 
         <TextView
             android:id="@+id/tv_lock_title"
@@ -47,8 +48,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="48dp"
-        android:layout_marginBottom="24dp">
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="16dp">
 
         <View
             android:id="@+id/dot_1"
@@ -80,16 +81,16 @@
 
     </LinearLayout>
 
-    <!-- 错误提示 -->
+    <!-- 错误提示 - 固定高度防止布局抖动 -->
     <TextView
         android:id="@+id/tv_lock_error"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="20dp"
         android:layout_marginBottom="16dp"
         android:text=""
         android:textSize="14sp"
         android:textColor="@android:color/holo_red_light"
-        android:visibility="gone" />
+        android:visibility="invisible" />
 
     <!-- 数字键盘 -->
     <GridLayout
@@ -97,7 +98,7 @@
         android:layout_height="wrap_content"
         android:columnCount="3"
         android:rowCount="4"
-        android:layout_marginTop="16dp">
+        android:layout_marginTop="0dp">
 
         <!-- 第1行 -->
         <TextView
@@ -245,7 +246,7 @@
             android:layout_margin="8dp"
             android:padding="24dp"
             android:src="@drawable/ic_back"
-            android:tint="@color/textSecondary"
+            app:tint="@color/textSecondary"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:clickable="true"
             android:focusable="true" />

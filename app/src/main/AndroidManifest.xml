@@ -21,6 +21,9 @@
     <!-- 通知权限（Android 13+） -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- 震动权限（密码错误反馈） -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
     <application
         android:name=".NASMovieApp"
         android:allowBackup="true"

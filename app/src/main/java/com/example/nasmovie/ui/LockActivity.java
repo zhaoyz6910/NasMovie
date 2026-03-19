@@ -38,6 +38,10 @@ public class LockActivity extends AppCompatActivity implements View.OnClickListe
     private String tempPassword = "";
     private boolean isUnlocking = false;
 
+    // 延迟倒计时
+    private Handler delayHandler = new Handler(Looper.getMainLooper());
+    private Runnable delayRunnable;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,7 +59,55 @@ public class LockActivity extends AppCompatActivity implements View.OnClickListe
         isSettingPassword = getIntent().getBooleanExtra("setting_password", false);
 
         initViews();
+        resetUIState();
         updateUI();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        // 防止重复启动时状态异常，重置所有状态
+        setIntent(intent);
+        isUnlocking = false;
+        isSettingPassword = intent.getBooleanExtra("setting_password", false);
+        isConfirmingPassword = false;
+        tempPassword = "";
+        passwordDigits.clear();
+        resetUIState();
+        updateUI();
+        updateDots();
+    }
+
+    /**
+     * 重置 UI 状态，确保所有元素可见
+     */
+    private void resetUIState() {
+        // 重置所有 UI 元素的 alpha 值
+        tvTitle.setAlpha(1f);
+        tvSubtitle.setAlpha(1f);
+        tvError.setAlpha(1f);
+        ivLockIcon.setAlpha(1f);
+        
+        for (View dot : dotViews) {
+            dot.setAlpha(1f);
+        }
+
+        // 重置数字键盘区域的 alpha
+        android.view.ViewParent parent = findViewById(R.id.btn_0).getParent();
+        if (parent instanceof android.view.View) {
+            ((android.view.View) parent).setAlpha(1f);
+        }
+
+        // 重置锁图标
+        ivLockIcon.setImageResource(R.drawable.ic_lock);
+        ivLockIcon.setColorFilter(null);
+        ivLockIcon.clearAnimation();
+
+        // 重置标题颜色
+        tvTitle.setTextColor(getResources().getColor(R.color.textPrimary, null));
+
+        // 重新启用键盘
+        setKeypadEnabled(true);
     }
 
     private void initViews() {
@@ -104,7 +156,7 @@ public class LockActivity extends AppCompatActivity implements View.OnClickListe
             tvTitle.setText("应用锁");
             tvSubtitle.setText("请输入密码解锁");
         }
-        tvError.setVisibility(View.GONE);
+        tvError.setVisibility(View.INVISIBLE);
     }
 
     @Override
@@ -130,8 +182,7 @@ public class LockActivity extends AppCompatActivity implements View.OnClickListe
 
         // 检查是否需要延迟
         if (!isSettingPassword && preferenceManager.isLockDelayRequired()) {
-            long remaining = preferenceManager.getLockRemainingDelayTime() / 1000;
-            showError("请等待 " + remaining + " 秒后重试");
+            startDelayCountdown();
             return;
         }
 
@@ -145,13 +196,53 @@ public class LockActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
     }
+    
+    /**
+     * 启动延迟倒计时
+     */
+    private void startDelayCountdown() {
+        stopDelayCountdown();
+        
+        delayRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (preferenceManager.isLockDelayRequired()) {
+                    long remaining = preferenceManager.getLockRemainingDelayTime() / 1000;
+                    if (remaining > 0) {
+                        showError("请等待 " + remaining + " 秒后重试");
+                        delayHandler.postDelayed(this, 1000);
+                    } else {
+                        // 延迟结束，隐藏错误提示
+                        tvError.setVisibility(View.INVISIBLE);
+                    }
+                } else {
+                    tvError.setVisibility(View.INVISIBLE);
+                }
+            }
+        };
+        
+        // 立即显示第一次
+        long remaining = preferenceManager.getLockRemainingDelayTime() / 1000;
+        showError("请等待 " + remaining + " 秒后重试");
+        delayHandler.postDelayed(delayRunnable, 1000);
+    }
+    
+    /**
+     * 停止延迟倒计时
+     */
+    private void stopDelayCountdown() {
+        if (delayRunnable != null) {
+            delayHandler.removeCallbacks(delayRunnable);
+            delayRunnable = null;
+        }
+    }
 
     private void onDeleteClick() {
         if (isUnlocking) return;
         if (!passwordDigits.isEmpty()) {
             passwordDigits.remove(passwordDigits.size() - 1);
             updateDots();
-            tvError.setVisibility(View.GONE);
+            tvError.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -159,7 +250,7 @@ public class LockActivity extends AppCompatActivity implements View.OnClickListe
         if (isUnlocking) return;
         passwordDigits.clear();
         updateDots();
-        tvError.setVisibility(View.GONE);
+        tvError.setVisibility(View.INVISIBLE);
     }
 
     private void updateDots() {
@@ -291,7 +382,7 @@ public class LockActivity extends AppCompatActivity implements View.OnClickListe
         tvTitle.setText("密码设置成功");
         tvSubtitle.setText("正在进入...");
         tvTitle.setTextColor(android.graphics.Color.parseColor("#4CAF50"));
-        tvError.setVisibility(View.GONE);
+        tvError.setVisibility(View.INVISIBLE);
 
         // 更新锁图标为开锁状态
         ivLockIcon.setImageResource(R.drawable.ic_lock_open);
@@ -376,8 +467,21 @@ public class LockActivity extends AppCompatActivity implements View.OnClickListe
         super.onResume();
         // 再次检查是否需要延迟
         if (!isSettingPassword && preferenceManager.isLockDelayRequired()) {
-            long remaining = preferenceManager.getLockRemainingDelayTime() / 1000;
-            showError("请等待 " + remaining + " 秒后重试");
+            startDelayCountdown();
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // 停止倒计时
+        stopDelayCountdown();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // 停止倒计时
+        stopDelayCountdown();
     }
 }

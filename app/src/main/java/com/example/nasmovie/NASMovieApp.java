@@ -4,11 +4,14 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.appcompat.app.AppCompatDelegate;
 
 import com.example.nasmovie.data.db.AppDatabase;
 import com.example.nasmovie.data.smb.SmbImageCache;
+import com.example.nasmovie.ui.ExoPlayerActivity;
 import com.example.nasmovie.ui.LockActivity;
 import com.example.nasmovie.util.PreferenceManager;
 
@@ -22,10 +25,17 @@ public class NASMovieApp extends Application implements Application.ActivityLife
     private SmbImageCache imageCache;
     private PreferenceManager preferenceManager;
 
-    // 前台Activity数量
-    private int foregroundActivities = 0;
+    // 记录应用进入后台的时间（用于判断是否需要显示锁屏）
+    private long backgroundTime = 0;
     // 标记是否正在显示锁屏
     private boolean isShowingLockScreen = false;
+    // 标记是否正在启动锁屏
+    private boolean isStartingLockScreen = false;
+    // 当前 Started 的 Activity 数量
+    private int startedActivityCount = 0;
+
+    // 最小后台时间（毫秒），超过此时间返回需要显示锁屏
+    private static final long MIN_BACKGROUND_TIME_FOR_LOCK = 500;
 
     @Override
     public void onCreate() {
@@ -65,19 +75,25 @@ public class NASMovieApp extends Application implements Application.ActivityLife
         // 排除锁屏Activity本身
         if (activity instanceof LockActivity) {
             isShowingLockScreen = true;
+            isStartingLockScreen = false;
             return;
         }
 
-        foregroundActivities++;
+        startedActivityCount++;
 
-        // 应用从后台切回前台（第一个Activity启动）
-        if (foregroundActivities == 1 && !isShowingLockScreen) {
+        // 应用从后台切回前台时检查锁屏
+        if (startedActivityCount == 1 && !isShowingLockScreen && !isStartingLockScreen) {
             checkAndShowLockScreen(activity);
         }
     }
 
     @Override
     public void onActivityResumed(Activity activity) {
+        // 为所有 Activity 设置 FLAG_SECURE，禁止任务管理器显示内容和截图
+        activity.getWindow().setFlags(
+                android.view.WindowManager.LayoutParams.FLAG_SECURE,
+                android.view.WindowManager.LayoutParams.FLAG_SECURE
+        );
     }
 
     @Override
@@ -92,14 +108,11 @@ public class NASMovieApp extends Application implements Application.ActivityLife
             return;
         }
 
-        foregroundActivities--;
+        startedActivityCount--;
 
-        // 应用切到后台（最后一个Activity停止）
-        if (foregroundActivities == 0) {
-            // 标记需要显示锁屏
-            if (preferenceManager != null && preferenceManager.isLockEnabled()) {
-                preferenceManager.setShouldShowLock(true);
-            }
+        // 应用切到后台，记录时间
+        if (startedActivityCount == 0) {
+            backgroundTime = System.currentTimeMillis();
         }
     }
 
@@ -116,19 +129,40 @@ public class NASMovieApp extends Application implements Application.ActivityLife
      */
     private void checkAndShowLockScreen(Activity activity) {
         if (preferenceManager == null) return;
+        if (!preferenceManager.isLockEnabled()) return;
 
-        if (preferenceManager.isLockEnabled() && preferenceManager.shouldShowLock()) {
+        // 防止重复启动锁屏
+        if (isShowingLockScreen || isStartingLockScreen) return;
+
+        // 判断是否需要显示锁屏：
+        // 1. 首次启动（backgroundTime == 0）
+        // 2. 从后台返回（backgroundTime > 0 且超过最小后台时间）
+        boolean needShowLock = false;
+        
+        if (backgroundTime == 0) {
+            // 首次启动
+            needShowLock = true;
+        } else {
+            // 从后台返回，检查时间间隔
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - backgroundTime >= MIN_BACKGROUND_TIME_FOR_LOCK) {
+                needShowLock = true;
+            }
+        }
+
+        if (needShowLock) {
+            // 标记正在启动锁屏
+            isStartingLockScreen = true;
+            
             // 启动锁屏Activity
             Intent intent = new Intent(activity, LockActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             activity.startActivity(intent);
+            
+            // 延迟重置标记
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                isStartingLockScreen = false;
+            }, 500);
         }
-    }
-
-    /**
-     * 获取前台Activity数量
-     */
-    public int getForegroundActivityCount() {
-        return foregroundActivities;
     }
 }
