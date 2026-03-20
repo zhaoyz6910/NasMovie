@@ -287,6 +287,31 @@ public class MainContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.item_movie_horizontal_scroll, parent, false);
+            
+            // 根据屏幕大小计算卡片尺寸
+            android.util.DisplayMetrics metrics = parent.getContext().getResources().getDisplayMetrics();
+            int screenWidth = metrics.widthPixels;
+            int maxWidth = (int) (600 * metrics.density);
+            float density = metrics.density;
+            
+            int cardWidth;
+            if (screenWidth > maxWidth) {
+                // 平板设备：卡片宽度翻倍
+                cardWidth = (int) (240 * density);
+            } else {
+                // 手机设备：保持原有宽度
+                cardWidth = (int) (120 * density);
+            }
+            // 高度按 2:3 比例计算
+            int cardHeight = (int) (cardWidth * 1.5f);
+            
+            // 设置卡片尺寸
+            MovieCard movieCard = view.findViewById(R.id.movie_card);
+            ViewGroup.LayoutParams params = movieCard.getLayoutParams();
+            params.width = cardWidth;
+            params.height = cardHeight;
+            movieCard.setLayoutParams(params);
+            
             return new ViewHolder(view);
         }
 
