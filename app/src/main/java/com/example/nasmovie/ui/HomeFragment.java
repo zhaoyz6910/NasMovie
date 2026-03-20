@@ -446,7 +446,7 @@ public class HomeFragment extends Fragment implements
     }
     
     private void updateGridSpanCount() {
-        if (recyclerViewMain == null || !isAdded()) return;
+        if (recyclerViewMain == null || mainContentAdapter == null || !isAdded()) return;
         
         android.util.DisplayMetrics metrics = getResources().getDisplayMetrics();
         int screenWidth = metrics.widthPixels;
@@ -457,12 +457,22 @@ public class HomeFragment extends Fragment implements
         } else {
             desiredCardWidth = (int) (120 * metrics.density);
         }
-        int spanCount = Math.max(2, screenWidth / desiredCardWidth);
+        final int spanCount = Math.max(2, screenWidth / desiredCardWidth);
         
         GridLayoutManager layoutManager = (GridLayoutManager) recyclerViewMain.getLayoutManager();
         if (layoutManager != null && layoutManager.getSpanCount() != spanCount) {
-            layoutManager.setSpanCount(spanCount);
-            recyclerViewMain.requestLayout();
+            // 重新创建 LayoutManager 并设置 spanSizeLookup
+            GridLayoutManager newLayoutManager = new GridLayoutManager(getContext(), spanCount);
+            newLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+                @Override
+                public int getSpanSize(int position) {
+                    int viewType = mainContentAdapter.getItemViewType(position);
+                    return (viewType == MainContentAdapter.TYPE_HEADER ||
+                            viewType == MainContentAdapter.TYPE_SECTION ||
+                            viewType == MainContentAdapter.TYPE_GRID_HEADER) ? spanCount : 1;
+                }
+            });
+            recyclerViewMain.setLayoutManager(newLayoutManager);
         }
     }
 
