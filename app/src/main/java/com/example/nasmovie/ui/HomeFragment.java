@@ -270,13 +270,15 @@ public class HomeFragment extends Fragment implements
             viewPagerFeatured.setCurrentItem(startPosition, false);
             viewPagerFeatured.setVisibility(View.VISIBLE);
 
-            // 在大屏幕设备上限制 ViewPager 宽度
+            // 在大屏幕设备上限制 ViewPager 宽度，并保持 16:9 比例
             int screenWidth = getResources().getDisplayMetrics().widthPixels;
             int maxWidth = (int) (600 * getResources().getDisplayMetrics().density); // 最大 600dp
             if (screenWidth > maxWidth) {
+                // 高度按 16:9 比例计算
+                int pagerHeight = (int) (maxWidth * 9f / 16f);
                 LinearLayout.LayoutParams pagerParams = new LinearLayout.LayoutParams(
                         maxWidth,
-                        (int) (180 * getResources().getDisplayMetrics().density));
+                        pagerHeight);
                 pagerParams.setMargins(0, (int) (8 * getResources().getDisplayMetrics().density), 0, (int) (16 * getResources().getDisplayMetrics().density));
                 pagerParams.gravity = android.view.Gravity.CENTER_HORIZONTAL;
                 viewPagerFeatured.setLayoutParams(pagerParams);
