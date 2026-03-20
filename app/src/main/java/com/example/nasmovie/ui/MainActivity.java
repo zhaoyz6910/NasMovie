@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Fragment currentFragment;
     private final List<Fragment> backStack = new ArrayList<>();
+    private final List<String> backStackTags = new ArrayList<>();  // 保存 tag 用于恢复
 
     // 双击退出标志
     private long lastBackPressTime = 0;
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     
     // 保存二级页面状态
     private static final String KEY_IS_SUB_PAGE = "is_sub_page";
+    private static final String KEY_BACK_STACK_TAGS = "back_stack_tags";
     private boolean isSubPage = false;
 
     @Override
@@ -74,12 +76,45 @@ public class MainActivity extends AppCompatActivity {
     protected void onSaveInstanceState(@androidx.annotation.NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean(KEY_IS_SUB_PAGE, isSubPage);
+        outState.putStringArrayList(KEY_BACK_STACK_TAGS, new ArrayList<>(backStackTags));
     }
     
     @Override
     protected void onRestoreInstanceState(@androidx.annotation.NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         isSubPage = savedInstanceState.getBoolean(KEY_IS_SUB_PAGE, false);
+        
+        // 恢复主 Fragment 引用
+        homeFragment = (HomeFragment) getSupportFragmentManager().findFragmentByTag("home");
+        favoritesFragment = (FavoritesFragment) getSupportFragmentManager().findFragmentByTag("favorites");
+        settingsFragment = (SettingsFragment) getSupportFragmentManager().findFragmentByTag("settings");
+        searchFragment = (SearchFragment) getSupportFragmentManager().findFragmentByTag("search");
+        
+        // 恢复 backStack
+        List<String> savedTags = savedInstanceState.getStringArrayList(KEY_BACK_STACK_TAGS);
+        if (savedTags != null) {
+            backStackTags.clear();
+            backStackTags.addAll(savedTags);
+            
+            // 根据 tag 恢复 backStack
+            backStack.clear();
+            for (String tag : backStackTags) {
+                Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+                if (fragment != null) {
+                    backStack.add(fragment);
+                }
+            }
+        }
+        
+        // 获取当前显示的 Fragment
+        List<Fragment> fragments = getSupportFragmentManager().getFragments();
+        for (Fragment fragment : fragments) {
+            if (fragment != null && fragment.isVisible()) {
+                currentFragment = fragment;
+                break;
+            }
+        }
+        
         // 根据状态隐藏/显示底部导航
         if (isSubPage) {
             bottomNavigation.setVisibility(View.GONE);
@@ -154,6 +189,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         backStack.clear();
+        backStackTags.clear();
         bottomNavigation.setVisibility(android.view.View.VISIBLE);
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -217,6 +253,11 @@ public class MainActivity extends AppCompatActivity {
         if (addToBack) {
             // 保存当前 Fragment 作为回退目标
             backStack.add(currentFragment);
+            // 保存当前 Fragment 的 tag
+            String currentTag = getFragmentTag(currentFragment);
+            if (currentTag != null) {
+                backStackTags.add(currentTag);
+            }
             // 隐藏底部导航
             bottomNavigation.setVisibility(android.view.View.GONE);
             isSubPage = true;  // 标记为二级页面
@@ -238,6 +279,7 @@ public class MainActivity extends AppCompatActivity {
             );
         } else {
             backStack.clear();
+            backStackTags.clear();
             // 显示底部导航
             bottomNavigation.setVisibility(android.view.View.VISIBLE);
             isSubPage = false;  // 标记为主页面
@@ -251,6 +293,34 @@ public class MainActivity extends AppCompatActivity {
 
         transaction.commit();
         currentFragment = fragment;
+    }
+    
+    /**
+     * 获取 Fragment 的 tag
+     */
+    private String getFragmentTag(Fragment fragment) {
+        if (fragment == null) return null;
+        if (fragment == homeFragment) return "home";
+        if (fragment == favoritesFragment) return "favorites";
+        if (fragment == settingsFragment) return "settings";
+        if (fragment == searchFragment) return "search";
+        // 对于其他 Fragment，从 FragmentManager 获取
+        List<Fragment> fragments = getSupportFragmentManager().getFragments();
+        for (Fragment f : fragments) {
+            if (f == fragment) {
+                // 遍历找到对应的 tag
+                String tag = findFragmentTag(fragment);
+                if (tag != null) return tag;
+            }
+        }
+        return null;
+    }
+    
+    private String findFragmentTag(Fragment fragment) {
+        if (fragment instanceof DetailFragment) return "detail";
+        if (fragment instanceof ServerManageFragment) return "server_manage";
+        if (fragment instanceof ServerEditFragment) return "server_edit";
+        return null;
     }
 
     private void setupBackPressedHandler() {
@@ -278,6 +348,9 @@ public class MainActivity extends AppCompatActivity {
 
             // 移除栈顶元素
             backStack.remove(backStack.size() - 1);
+            if (!backStackTags.isEmpty()) {
+                backStackTags.remove(backStackTags.size() - 1);
+            }
 
             // 隐藏当前 Fragment，显示目标 Fragment
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
