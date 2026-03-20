@@ -224,30 +224,62 @@ public class DetailFragment extends Fragment {
         String localPoster = movie.getLocalPosterPath();
         boolean thumbExists = localThumb != null && !localThumb.isEmpty() && new File(localThumb).exists();
         boolean posterExists = localPoster != null && !localPoster.isEmpty() && new File(localPoster).exists();
+        
+        // 横屏模式使用 poster，竖屏模式使用 thumb/detailPoster
+        boolean isLandscape = getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 
-        if (thumbExists) {
-            Glide.with(requireContext())
-                .load(new File(localThumb))
-                .placeholder(R.drawable.bg_poster_placeholder)
-                .error(R.drawable.bg_poster_placeholder)
-                .transition(DrawableTransitionOptions.withCrossFade(300))
-                .into(ivPoster);
-        } else if (movie.getThumbPath() != null && !movie.getThumbPath().isEmpty()) {
-            SmbImageLoader.loadDetailPoster(requireContext(), movie, ivPoster);
-        } else if (posterExists) {
-            Glide.with(requireContext())
-                .load(new File(localPoster))
-                .placeholder(R.drawable.bg_poster_placeholder)
-                .error(R.drawable.bg_poster_placeholder)
-                .transition(DrawableTransitionOptions.withCrossFade(300))
-                .into(ivPoster);
-        } else if (movie.getPosterPath() != null && !movie.getPosterPath().isEmpty()) {
-            SmbImageLoader.loadPoster(requireContext(), movie, ivPoster);
+        if (isLandscape) {
+            // 横屏：优先使用 poster
+            if (posterExists) {
+                Glide.with(requireContext())
+                    .load(new File(localPoster))
+                    .placeholder(R.drawable.bg_poster_placeholder)
+                    .error(R.drawable.bg_poster_placeholder)
+                    .transition(DrawableTransitionOptions.withCrossFade(300))
+                    .into(ivPoster);
+            } else if (movie.getPosterPath() != null && !movie.getPosterPath().isEmpty()) {
+                SmbImageLoader.loadPoster(requireContext(), movie, ivPoster);
+            } else if (thumbExists) {
+                Glide.with(requireContext())
+                    .load(new File(localThumb))
+                    .placeholder(R.drawable.bg_poster_placeholder)
+                    .error(R.drawable.bg_poster_placeholder)
+                    .transition(DrawableTransitionOptions.withCrossFade(300))
+                    .into(ivPoster);
+            } else if (movie.getThumbPath() != null && !movie.getThumbPath().isEmpty()) {
+                SmbImageLoader.loadDetailPoster(requireContext(), movie, ivPoster);
+            } else {
+                Glide.with(requireContext())
+                    .load(R.drawable.bg_poster_placeholder)
+                    .transition(DrawableTransitionOptions.withCrossFade(300))
+                    .into(ivPoster);
+            }
         } else {
-            Glide.with(requireContext())
-                .load(R.drawable.bg_poster_placeholder)
-                .transition(DrawableTransitionOptions.withCrossFade(300))
-                .into(ivPoster);
+            // 竖屏：优先使用 thumb/detailPoster
+            if (thumbExists) {
+                Glide.with(requireContext())
+                    .load(new File(localThumb))
+                    .placeholder(R.drawable.bg_poster_placeholder)
+                    .error(R.drawable.bg_poster_placeholder)
+                    .transition(DrawableTransitionOptions.withCrossFade(300))
+                    .into(ivPoster);
+            } else if (movie.getThumbPath() != null && !movie.getThumbPath().isEmpty()) {
+                SmbImageLoader.loadDetailPoster(requireContext(), movie, ivPoster);
+            } else if (posterExists) {
+                Glide.with(requireContext())
+                    .load(new File(localPoster))
+                    .placeholder(R.drawable.bg_poster_placeholder)
+                    .error(R.drawable.bg_poster_placeholder)
+                    .transition(DrawableTransitionOptions.withCrossFade(300))
+                    .into(ivPoster);
+            } else if (movie.getPosterPath() != null && !movie.getPosterPath().isEmpty()) {
+                SmbImageLoader.loadPoster(requireContext(), movie, ivPoster);
+            } else {
+                Glide.with(requireContext())
+                    .load(R.drawable.bg_poster_placeholder)
+                    .transition(DrawableTransitionOptions.withCrossFade(300))
+                    .into(ivPoster);
+            }
         }
     }
 
