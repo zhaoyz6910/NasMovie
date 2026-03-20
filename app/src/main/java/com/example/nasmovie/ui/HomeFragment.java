@@ -176,14 +176,29 @@ public class HomeFragment extends Fragment implements
         mainContentAdapter = new MainContentAdapter();
         mainContentAdapter.setOnMovieClickListener(this);
         mainContentAdapter.setRepository(repository);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 3);
+        
+        // 根据屏幕宽度计算列数，平板设备卡片宽度 240dp
+        android.util.DisplayMetrics metrics = getResources().getDisplayMetrics();
+        int screenWidth = metrics.widthPixels;
+        int maxWidth = (int) (600 * metrics.density);
+        int desiredCardWidth;
+        if (screenWidth > maxWidth) {
+            // 平板设备：卡片宽度 240dp
+            desiredCardWidth = (int) (240 * metrics.density);
+        } else {
+            // 手机设备：卡片宽度约 120dp
+            desiredCardWidth = (int) (120 * metrics.density);
+        }
+        int spanCount = Math.max(2, screenWidth / desiredCardWidth);
+        
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), spanCount);
         gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
                 int viewType = mainContentAdapter.getItemViewType(position);
                 return (viewType == MainContentAdapter.TYPE_HEADER ||
                         viewType == MainContentAdapter.TYPE_SECTION ||
-                        viewType == MainContentAdapter.TYPE_GRID_HEADER) ? 3 : 1;
+                        viewType == MainContentAdapter.TYPE_GRID_HEADER) ? spanCount : 1;
             }
         });
         recyclerViewMain.setLayoutManager(gridLayoutManager);
