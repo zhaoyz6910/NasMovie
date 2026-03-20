@@ -5,6 +5,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
@@ -37,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
     private static final long BACK_PRESS_INTERVAL = 2000;
 
     private PreferenceManager preferenceManager;
+    
+    private static final String KEY_CURRENT_FRAGMENT_TAG = "current_fragment_tag";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,9 +56,66 @@ public class MainActivity extends AppCompatActivity {
         initViews();
         setupBackPressedHandler();
 
-        if (savedInstanceState == null) {
+        // 恢复 Fragment 状态
+        if (savedInstanceState != null) {
+            String currentTag = savedInstanceState.getString(KEY_CURRENT_FRAGMENT_TAG);
+            if (currentTag != null) {
+                Fragment fragment = getSupportFragmentManager().findFragmentByTag(currentTag);
+                if (fragment != null) {
+                    currentFragment = fragment;
+                    // 恢复 backStack
+                    for (int i = 1; i <= savedInstanceState.getInt("back_stack_size", 0); i++) {
+                        String tag = savedInstanceState.getString("back_stack_" + i);
+                        if (tag != null) {
+                            Fragment stackFragment = getSupportFragmentManager().findFragmentByTag(tag);
+                            if (stackFragment != null) {
+                                backStack.add(stackFragment);
+                            }
+                        }
+                    }
+                    // 如果当前不是主 Fragment，隐藏底部导航栏
+                    if (currentTag != null && !currentTag.equals("home") && !currentTag.equals("favorites") && !currentTag.equals("settings")) {
+                        bottomNavigation.setVisibility(View.GONE);
+                    }
+                } else {
+                    loadHomeFragment();
+                }
+            } else {
+                loadHomeFragment();
+            }
+        } else {
             loadHomeFragment();
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        
+        // 保存当前 Fragment
+        if (currentFragment != null) {
+            String tag = getFragmentTag(currentFragment);
+            if (tag != null) {
+                outState.putString(KEY_CURRENT_FRAGMENT_TAG, tag);
+            }
+        }
+        
+        // 保存 backStack
+        outState.putInt("back_stack_size", backStack.size());
+        for (int i = 0; i < backStack.size(); i++) {
+            String tag = getFragmentTag(backStack.get(i));
+            if (tag != null) {
+                outState.putString("back_stack_" + (i + 1), tag);
+            }
+        }
+    }
+
+    private String getFragmentTag(Fragment fragment) {
+        if (fragment == homeFragment) return "home";
+        if (fragment == favoritesFragment) return "favorites";
+        if (fragment == settingsFragment) return "settings";
+        if (fragment == searchFragment) return "search";
+        return null;
     }
 
     @Override
@@ -248,20 +308,6 @@ public class MainActivity extends AppCompatActivity {
     public void hideBottomNavigation() {
         if (bottomNavigation != null) {
             bottomNavigation.setVisibility(View.GONE);
-        }
-    }
-
-    /**
-     * 通知 Fragment 的 view 已被重新 inflate
-     * 确保 Fragment 的显示状态正确
-     */
-    public void onFragmentViewReplaced(Fragment fragment) {
-        if (currentFragment == fragment) {
-            // 使用 detach/attach 重新初始化 Fragment 的状态
-            getSupportFragmentManager().beginTransaction()
-                .detach(fragment)
-                .attach(fragment)
-                .commit();
         }
     }
 }

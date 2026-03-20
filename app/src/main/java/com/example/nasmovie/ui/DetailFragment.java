@@ -91,6 +91,12 @@ public class DetailFragment extends Fragment {
         initData();
         loadMovie();
     }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(ARG_MOVIE_ID, movieId);
+    }
     
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
@@ -98,12 +104,10 @@ public class DetailFragment extends Fragment {
         
         // 重新加载布局以切换横竖屏布局
         if (container != null) {
-            // 移除旧视图
             container.removeView(rootView);
-            
-            // 重新 inflate 新布局
             LayoutInflater inflater = LayoutInflater.from(requireContext());
             rootView = inflater.inflate(R.layout.fragment_detail, container, false);
+            container.addView(rootView);
             
             // 重新绑定视图和数据
             initViews(rootView);
@@ -115,10 +119,7 @@ public class DetailFragment extends Fragment {
                 contentContainer.setVisibility(View.VISIBLE);
             }
             
-            // 添加新视图
-            container.addView(rootView);
-            
-            // 确保 Fragment 的显示状态正确
+            // 确保底部导航栏保持隐藏
             if (getActivity() instanceof MainActivity) {
                 ((MainActivity) getActivity()).hideBottomNavigation();
             }
