@@ -38,9 +38,6 @@ public class DetailFragment extends Fragment {
 
     public static final String ARG_MOVIE_ID = "movie_id";
 
-    private ViewGroup container;
-    private View rootView;
-    
     private ImageView ivPoster;
     private TextView tvTitle;
     private TextView tvOriginalTitle;
@@ -76,9 +73,7 @@ public class DetailFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        this.container = container;
-        rootView = inflater.inflate(R.layout.fragment_detail, container, false);
-        return rootView;
+        return inflater.inflate(R.layout.fragment_detail, container, false);
     }
 
     @Override
@@ -96,34 +91,6 @@ public class DetailFragment extends Fragment {
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString(ARG_MOVIE_ID, movieId);
-    }
-    
-    @Override
-    public void onConfigurationChanged(@NonNull Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        
-        // 重新加载布局以切换横竖屏布局
-        if (container != null) {
-            container.removeView(rootView);
-            LayoutInflater inflater = LayoutInflater.from(requireContext());
-            rootView = inflater.inflate(R.layout.fragment_detail, container, false);
-            container.addView(rootView);
-            
-            // 重新绑定视图和数据
-            initViews(rootView);
-            if (movie != null) {
-                displayMovie();
-                displayProgress(currentProgress);
-                updateFavoriteButton();
-                progressLoading.setVisibility(View.GONE);
-                contentContainer.setVisibility(View.VISIBLE);
-            }
-            
-            // 确保底部导航栏保持隐藏
-            if (getActivity() instanceof MainActivity) {
-                ((MainActivity) getActivity()).hideBottomNavigation();
-            }
-        }
     }
 
     private void initViews(View view) {
@@ -239,18 +206,18 @@ public class DetailFragment extends Fragment {
         }
 
         if (StringUtils.isNotEmpty(movie.getDirector())) {
-            rootView.findViewById(R.id.director_container).setVisibility(View.VISIBLE);
+            getView().findViewById(R.id.director_container).setVisibility(View.VISIBLE);
             tvDirector.setText(movie.getDirector());
         } else {
-            rootView.findViewById(R.id.director_container).setVisibility(View.GONE);
+            getView().findViewById(R.id.director_container).setVisibility(View.GONE);
         }
 
         List<String> actors = movie.getActorList();
         if (!actors.isEmpty()) {
-            rootView.findViewById(R.id.actors_container).setVisibility(View.VISIBLE);
+            getView().findViewById(R.id.actors_container).setVisibility(View.VISIBLE);
             tvActors.setText(StringUtils.join(actors, ", "));
         } else {
-            rootView.findViewById(R.id.actors_container).setVisibility(View.GONE);
+            getView().findViewById(R.id.actors_container).setVisibility(View.GONE);
         }
 
         if (StringUtils.isNotEmpty(movie.getPlot())) {
