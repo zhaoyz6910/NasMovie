@@ -1,6 +1,7 @@
 package com.example.nasmovie.ui;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -285,34 +286,7 @@ public class HomeFragment extends Fragment implements
             viewPagerFeatured.setCurrentItem(startPosition, false);
             viewPagerFeatured.setVisibility(View.VISIBLE);
 
-            // 在大屏幕设备上限制 item 宽度，并保持 16:9 比例
-            int screenWidth = getResources().getDisplayMetrics().widthPixels;
-            int maxWidth = (int) (600 * getResources().getDisplayMetrics().density); // 最大 600dp
-            float density = getResources().getDisplayMetrics().density;
-            
-            if (screenWidth > maxWidth) {
-                // ViewPager 宽度保持屏幕宽度，高度按 16:9 比例
-                int pagerHeight = (int) (maxWidth * 9f / 16f);
-                LinearLayout.LayoutParams pagerParams = new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        pagerHeight);
-                pagerParams.setMargins(0, (int) (8 * density), 0, (int) (16 * density));
-                viewPagerFeatured.setLayoutParams(pagerParams);
-                
-                // 设置 padding 让 item 居中显示
-                int padding = (screenWidth - maxWidth) / 2;
-                viewPagerFeatured.setPadding(padding, 0, padding, 0);
-            } else {
-                // 小屏幕设备保持原有 padding
-                viewPagerFeatured.setPadding((int) (32 * density), 0, (int) (32 * density), 0);
-            }
-
-            // 强制触发一次布局刷新，以确保 PageTransformer 立即生效
-            viewPagerFeatured.post(() -> {
-                if (isAdded() && viewPagerFeatured != null) {
-                    viewPagerFeatured.requestLayout();
-                }
-            });
+            updateViewPagerSize();
 
             if (mainContentAdapter.getHeaderView() == null) {
                 LinearLayout headerContainer = new LinearLayout(getContext());
@@ -415,7 +389,6 @@ public class HomeFragment extends Fragment implements
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
         if (!hidden) {
-            // 从隐藏变为可见时，强制刷新数据
             loadMovies();
         }
     }
@@ -423,28 +396,74 @@ public class HomeFragment extends Fragment implements
     @Override
     public void onResume() {
         super.onResume();
-        // 只有首次加载时才加载数据，返回时保留原有影片
         if (!isDataLoaded) {
             loadMovies();
         }
         startAutoSlide();
-
-        // 当从其他页面切回时，强制 ViewPager2 重新布局以触发 PageTransformer
-        if (viewPagerFeatured != null) {
-            viewPagerFeatured.post(() -> {
-                if (isAdded() && viewPagerFeatured != null) {
-                    viewPagerFeatured.requestLayout();
-                    // 额外触发一次无效化，确保绘制流程完整
-                    viewPagerFeatured.invalidate();
-                }
-            });
-        }
+        updateViewPagerSize();
     }
 
     @Override
     public void onPause() {
         super.onPause();
         stopAutoSlide();
+    }
+    
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        updateViewPagerSize();
+        updateGridSpanCount();
+    }
+    
+    private void updateViewPagerSize() {
+        if (viewPagerFeatured == null || !isAdded()) return;
+        
+        int screenWidth = getResources().getDisplayMetrics().widthPixels;
+        int maxWidth = (int) (600 * getResources().getDisplayMetrics().density);
+        float density = getResources().getDisplayMetrics().density;
+        
+        if (screenWidth > maxWidth) {
+            int pagerHeight = (int) (maxWidth * 9f / 16f);
+            LinearLayout.LayoutParams pagerParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    pagerHeight);
+            pagerParams.setMargins(0, (int) (8 * density), 0, (int) (16 * density));
+            viewPagerFeatured.setLayoutParams(pagerParams);
+            
+            int padding = (screenWidth - maxWidth) / 2;
+            viewPagerFeatured.setPadding(padding, 0, padding, 0);
+        } else {
+            viewPagerFeatured.setPadding((int) (32 * density), 0, (int) (32 * density), 0);
+        }
+        
+        viewPagerFeatured.post(() -> {
+            if (isAdded() && viewPagerFeatured != null) {
+                viewPagerFeatured.requestLayout();
+                viewPagerFeatured.invalidate();
+            }
+        });
+    }
+    
+    private void updateGridSpanCount() {
+        if (recyclerViewMain == null || !isAdded()) return;
+        
+        android.util.DisplayMetrics metrics = getResources().getDisplayMetrics();
+        int screenWidth = metrics.widthPixels;
+        int maxWidth = (int) (600 * metrics.density);
+        int desiredCardWidth;
+        if (screenWidth > maxWidth) {
+            desiredCardWidth = (int) (240 * metrics.density);
+        } else {
+            desiredCardWidth = (int) (120 * metrics.density);
+        }
+        int spanCount = Math.max(2, screenWidth / desiredCardWidth);
+        
+        GridLayoutManager layoutManager = (GridLayoutManager) recyclerViewMain.getLayoutManager();
+        if (layoutManager != null && layoutManager.getSpanCount() != spanCount) {
+            layoutManager.setSpanCount(spanCount);
+            mainContentAdapter.notifyItemRangeChanged(0, mainContentAdapter.getItemCount());
+        }
     }
 
     @Override
