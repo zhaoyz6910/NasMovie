@@ -96,14 +96,27 @@ public class DetailFragment extends Fragment {
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         
-        // 横竖屏切换时，确保底部导航栏保持隐藏
-        if (getActivity() instanceof MainActivity) {
-            ((MainActivity) getActivity()).hideBottomNavigation();
-        }
-        
-        // Android 会自动重建布局，只需要重新加载海报
-        if (movie != null) {
-            displayMovie();
+        // 重新加载布局以切换横竖屏布局
+        if (container != null) {
+            container.removeView(rootView);
+            LayoutInflater inflater = LayoutInflater.from(requireContext());
+            rootView = inflater.inflate(R.layout.fragment_detail, container, false);
+            container.addView(rootView);
+            
+            // 重新绑定视图和数据
+            initViews(rootView);
+            if (movie != null) {
+                displayMovie();
+                displayProgress(currentProgress);
+                updateFavoriteButton();
+                progressLoading.setVisibility(View.GONE);
+                contentContainer.setVisibility(View.VISIBLE);
+            }
+            
+            // 确保底部导航栏保持隐藏
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).hideBottomNavigation();
+            }
         }
     }
 
