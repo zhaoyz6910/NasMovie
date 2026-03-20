@@ -459,10 +459,10 @@ public class ExoPlayerActivity extends AppCompatActivity implements
     private void toggleFullscreen() {
         isFullscreen = !isFullscreen;
         if (isFullscreen) {
-            setRequestedOrientation(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+            setRequestedOrientation(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
             btnFullscreen.setImageResource(R.drawable.ic_fullscreen_exit);
         } else {
-            setRequestedOrientation(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+            setRequestedOrientation(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
             btnFullscreen.setImageResource(R.drawable.ic_fullscreen);
         }
         startHideControlsTimer();
@@ -609,6 +609,10 @@ public class ExoPlayerActivity extends AppCompatActivity implements
     protected void onDestroy() {
         super.onDestroy();
         keepScreenOn(false);
+
+        // 恢复系统UI
+        showSystemUI();
+
         // 重要：先移除所有 Handler 回调，避免回调访问已释放的 player
         stopProgressUpdate();
         handler.removeCallbacks(hideControlsRunnable);
@@ -641,6 +645,21 @@ public class ExoPlayerActivity extends AppCompatActivity implements
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
             );
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private void showSystemUI() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            // Android 11+ 恢复系统UI
+            getWindow().setDecorFitsSystemWindows(true);
+            android.view.WindowInsetsController controller = getWindow().getInsetsController();
+            if (controller != null) {
+                controller.show(android.view.WindowInsets.Type.statusBars() | android.view.WindowInsets.Type.navigationBars());
+            }
+        } else {
+            // Android 10 及以下清除标志
+            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
         }
     }
 

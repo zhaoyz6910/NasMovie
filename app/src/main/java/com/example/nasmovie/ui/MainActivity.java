@@ -294,7 +294,9 @@ public class MainActivity extends AppCompatActivity {
             transaction.commit();
             currentFragment = targetFragment;
 
-            if (targetFragment == homeFragment || targetFragment == favoritesFragment || targetFragment == settingsFragment) {
+            // 使用 tag 判断而不是实例比较，因为横竖屏切换后 fragment 实例会重建
+            String targetTag = getFragmentTag(targetFragment);
+            if ("home".equals(targetTag) || "favorites".equals(targetTag) || "settings".equals(targetTag)) {
                 bottomNavigation.setVisibility(View.VISIBLE);
             }
         } else {

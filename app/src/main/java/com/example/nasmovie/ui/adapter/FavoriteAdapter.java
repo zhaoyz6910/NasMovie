@@ -119,17 +119,6 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
                     }
                 }
             });
-
-            itemView.setOnLongClickListener(v -> {
-                int position = getBindingAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    Movie movie = movies.get(position);
-                    if (longClickListener != null) {
-                        return longClickListener.onMovieLongClick(movie, position);
-                    }
-                }
-                return false;
-            });
         }
 
         void bind(Movie movie, boolean isSelected, boolean selectionMode) {
