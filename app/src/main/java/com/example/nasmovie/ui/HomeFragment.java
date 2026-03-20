@@ -462,7 +462,7 @@ public class HomeFragment extends Fragment implements
         GridLayoutManager layoutManager = (GridLayoutManager) recyclerViewMain.getLayoutManager();
         if (layoutManager != null && layoutManager.getSpanCount() != spanCount) {
             layoutManager.setSpanCount(spanCount);
-            mainContentAdapter.notifyItemRangeChanged(0, mainContentAdapter.getItemCount());
+            recyclerViewMain.requestLayout();
         }
     }
 
