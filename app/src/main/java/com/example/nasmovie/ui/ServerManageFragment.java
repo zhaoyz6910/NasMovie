@@ -12,8 +12,6 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-
 import com.example.nasmovie.NASMovieApp;
 import com.example.nasmovie.R;
 import com.example.nasmovie.data.db.SmbConfigDao;
@@ -169,17 +167,16 @@ public class ServerManageFragment extends Fragment implements
     }
 
     private void deleteServer(SmbConfig config) {
-        new MaterialAlertDialogBuilder(requireContext())
-            .setTitle(R.string.delete_confirm)
-            .setMessage("确定要删除服务器 \"" + config.getName() + "\" 吗？")
-            .setPositiveButton(R.string.confirm, (dialog, which) -> {
+        new BottomSheetDrawer.Builder()
+            .addItem("取消", null)
+            .addDestructiveItem("删除", () -> {
                 new Thread(() -> {
                     smbConfigDao.delete(config);
                     loadServers();
                 }).start();
             })
-            .setNegativeButton(R.string.cancel, null)
-            .show();
+            .build()
+            .show(getParentFragmentManager(), "DeleteConfirmDrawer");
     }
 
     private void scanSingleServer(long id) {
