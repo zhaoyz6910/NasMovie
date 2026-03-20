@@ -270,18 +270,26 @@ public class HomeFragment extends Fragment implements
             viewPagerFeatured.setCurrentItem(startPosition, false);
             viewPagerFeatured.setVisibility(View.VISIBLE);
 
-            // 在大屏幕设备上限制 ViewPager 宽度，并保持 16:9 比例
+            // 在大屏幕设备上限制 item 宽度，并保持 16:9 比例
             int screenWidth = getResources().getDisplayMetrics().widthPixels;
             int maxWidth = (int) (600 * getResources().getDisplayMetrics().density); // 最大 600dp
+            float density = getResources().getDisplayMetrics().density;
+            
             if (screenWidth > maxWidth) {
-                // 高度按 16:9 比例计算
+                // ViewPager 宽度保持屏幕宽度，高度按 16:9 比例
                 int pagerHeight = (int) (maxWidth * 9f / 16f);
                 LinearLayout.LayoutParams pagerParams = new LinearLayout.LayoutParams(
-                        maxWidth,
+                        LinearLayout.LayoutParams.MATCH_PARENT,
                         pagerHeight);
-                pagerParams.setMargins(0, (int) (8 * getResources().getDisplayMetrics().density), 0, (int) (16 * getResources().getDisplayMetrics().density));
-                pagerParams.gravity = android.view.Gravity.CENTER_HORIZONTAL;
+                pagerParams.setMargins(0, (int) (8 * density), 0, (int) (16 * density));
                 viewPagerFeatured.setLayoutParams(pagerParams);
+                
+                // 设置 padding 让 item 居中显示
+                int padding = (screenWidth - maxWidth) / 2;
+                viewPagerFeatured.setPadding(padding, 0, padding, 0);
+            } else {
+                // 小屏幕设备保持原有 padding
+                viewPagerFeatured.setPadding((int) (32 * density), 0, (int) (32 * density), 0);
             }
 
             // 强制触发一次布局刷新，以确保 PageTransformer 立即生效
