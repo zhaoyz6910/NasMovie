@@ -103,6 +103,11 @@ public class DetailFragment extends Fragment {
             rootView = inflater.inflate(R.layout.fragment_detail, container, false);
             container.addView(rootView);
             
+            // 隐藏底部导航栏
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).hideBottomNavigation();
+            }
+            
             // 重新绑定视图和数据
             initViews(rootView);
             if (movie != null) {

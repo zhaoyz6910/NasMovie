@@ -241,4 +241,13 @@ public class MainActivity extends AppCompatActivity {
     public void performRealBack() {
         performBack();
     }
+
+    /**
+     * 隐藏底部导航栏（用于子页面横竖屏切换）
+     */
+    public void hideBottomNavigation() {
+        if (bottomNavigation != null) {
+            bottomNavigation.setVisibility(View.GONE);
+        }
+    }
 }
