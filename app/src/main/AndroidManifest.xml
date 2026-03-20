@@ -40,6 +40,7 @@
             android:name=".ui.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:configChanges="orientation|screenSize|keyboardHidden"
             android:theme="@style/Theme.NASMovie">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
