@@ -111,12 +111,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String getFragmentTag(Fragment fragment) {
-        if (fragment == homeFragment) return "home";
-        if (fragment == favoritesFragment) return "favorites";
-        if (fragment == settingsFragment) return "settings";
-        if (fragment == searchFragment) return "search";
-        return null;
-    }
+    if (fragment == null) return null;
+    
+    // 先尝试获取 Fragment 的实际 tag
+    String tag = fragment.getTag();
+    if (tag != null) return tag;
+    
+    // 如果没有 tag，根据 Fragment 类型返回默认 tag
+    if (fragment instanceof HomeFragment) return "home";
+    if (fragment instanceof FavoritesFragment) return "favorites";
+    if (fragment instanceof SettingsFragment) return "settings";
+    if (fragment instanceof SearchFragment) return "search";
+    if (fragment instanceof DetailFragment) return "detail";
+    if (fragment instanceof ServerManageFragment) return "server_manage";
+    if (fragment instanceof ServerEditFragment) return "server_edit";
+    
+    return null;
+}
 
     @Override
     protected void onPause() {
