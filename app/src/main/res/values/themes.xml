@@ -67,4 +67,19 @@
         <item name="android:paddingTop">2dp</item>
         <item name="android:paddingBottom">2dp</item>
     </style>
+
+    <!-- Transparent Bottom Sheet Dialog -->
+    <style name="Theme.NASMovie.BottomSheetDialog" parent="Theme.MaterialComponents.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Style.NASMovie.BottomSheet</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.5</item>
+    </style>
+
+    <style name="Style.NASMovie.BottomSheet" parent="Widget.MaterialComponents.BottomSheet.Modal">
+        <!-- 透明背景让布局自己的圆角背景生效 -->
+        <item name="android:background">@android:color/transparent</item>
+        <item name="backgroundTint">@android:color/transparent</item>
+    </style>
 </resources>

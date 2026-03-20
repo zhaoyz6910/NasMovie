@@ -8,10 +8,11 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import com.example.nasmovie.NASMovieApp;
 import com.example.nasmovie.R;
@@ -19,6 +20,7 @@ import com.example.nasmovie.data.db.SmbConfigDao;
 import com.example.nasmovie.data.model.SmbConfig;
 import com.example.nasmovie.service.ScanService;
 import com.example.nasmovie.ui.adapter.ServerAdapter;
+import com.example.nasmovie.view.BottomSheetDrawer;
 import com.example.nasmovie.view.NasToolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -135,24 +137,39 @@ public class ServerManageFragment extends Fragment implements
 
     @Override
     public void onItemLongClick(SmbConfig config) {
-        String[] items = {"扫描该服务器", "编辑", "删除"};
+        BottomSheetDrawer drawer = new BottomSheetDrawer.Builder()
+            .addItem("扫描媒体库", () -> scanSingleServer(config.getId()))
+            .addItem("编辑服务器", () -> onItemClick(config))
+            .addDestructiveItem("删除服务器", () -> deleteServer(config))
+            .build();
 
-        new AlertDialog.Builder(requireContext())
-            .setTitle(config.getName())
-            .setItems(items, (dialog, which) -> {
-                if (which == 0) {
-                    scanSingleServer(config.getId());
-                } else if (which == 1) {
-                    onItemClick(config);
-                } else if (which == 2) {
-                    deleteServer(config);
+        drawer.show(getParentFragmentManager(), "ServerOptionsDrawer");
+    }
+
+    private void setAsDefaultServer(SmbConfig config) {
+        new Thread(() -> {
+            // 先清除所有默认标记
+            List<SmbConfig> allServers = smbConfigDao.getAll();
+            for (SmbConfig server : allServers) {
+                if (server.isDefault()) {
+                    server.setDefault(false);
+                    smbConfigDao.update(server);
                 }
-            })
-            .show();
+            }
+            // 设置当前服务器为默认
+            config.setDefault(true);
+            smbConfigDao.update(config);
+            loadServers();
+            if (isAdded()) {
+                requireActivity().runOnUiThread(() -> {
+                    Toast.makeText(getContext(), "已设为默认服务器", Toast.LENGTH_SHORT).show();
+                });
+            }
+        }).start();
     }
 
     private void deleteServer(SmbConfig config) {
-        new AlertDialog.Builder(requireContext())
+        new MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.delete_confirm)
             .setMessage("确定要删除服务器 \"" + config.getName() + "\" 吗？")
             .setPositiveButton(R.string.confirm, (dialog, which) -> {
