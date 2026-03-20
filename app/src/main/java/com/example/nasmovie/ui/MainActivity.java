@@ -257,9 +257,10 @@ public class MainActivity extends AppCompatActivity {
      */
     public void onFragmentViewReplaced(Fragment fragment) {
         if (currentFragment == fragment) {
-            // 确保 Fragment 处于显示状态
+            // 使用 detach/attach 重新初始化 Fragment 的状态
             getSupportFragmentManager().beginTransaction()
-                .show(fragment)
+                .detach(fragment)
+                .attach(fragment)
                 .commit();
         }
     }
