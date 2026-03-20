@@ -80,7 +80,21 @@ public class FavoritesFragment extends Fragment implements
             }
         }
 
-        recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        // 根据屏幕宽度计算列数，卡片宽度约 120dp
+        android.util.DisplayMetrics metrics = getResources().getDisplayMetrics();
+        int screenWidth = metrics.widthPixels;
+        int maxWidth = (int) (600 * metrics.density);
+        int desiredCardWidth;
+        if (screenWidth > maxWidth) {
+            // 平板设备：卡片宽度 240dp
+            desiredCardWidth = (int) (240 * metrics.density);
+        } else {
+            // 手机设备：卡片宽度约 120dp
+            desiredCardWidth = (int) (120 * metrics.density);
+        }
+        int spanCount = Math.max(2, screenWidth / desiredCardWidth);
+        
+        recyclerView.setLayoutManager(new GridLayoutManager(getContext(), spanCount));
         adapter = new FavoriteAdapter();
         adapter.setOnMovieClickListener(this);
         adapter.setOnMovieLongClickListener(this);
