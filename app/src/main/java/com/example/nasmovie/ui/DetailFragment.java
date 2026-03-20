@@ -1,6 +1,7 @@
 package com.example.nasmovie.ui;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +13,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
@@ -38,6 +38,9 @@ public class DetailFragment extends Fragment {
 
     public static final String ARG_MOVIE_ID = "movie_id";
 
+    private ViewGroup container;
+    private View rootView;
+    
     private ImageView ivPoster;
     private TextView tvTitle;
     private TextView tvOriginalTitle;
@@ -60,6 +63,7 @@ public class DetailFragment extends Fragment {
     private boolean isFavorite = false;
     private View contentContainer;
     private ProgressBar progressLoading;
+    private WatchProgress currentProgress;
 
     public static DetailFragment newInstance(String movieId) {
         DetailFragment fragment = new DetailFragment();
@@ -72,7 +76,9 @@ public class DetailFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_detail, container, false);
+        this.container = container;
+        rootView = inflater.inflate(R.layout.fragment_detail, container, false);
+        return rootView;
     }
 
     @Override
@@ -84,6 +90,29 @@ public class DetailFragment extends Fragment {
         initViews(view);
         initData();
         loadMovie();
+    }
+    
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        
+        // 重新加载布局
+        if (container != null) {
+            container.removeView(rootView);
+            LayoutInflater inflater = LayoutInflater.from(requireContext());
+            rootView = inflater.inflate(R.layout.fragment_detail, container, false);
+            container.addView(rootView);
+            
+            // 重新绑定视图和数据
+            initViews(rootView);
+            if (movie != null) {
+                displayMovie();
+                displayProgress(currentProgress);
+                updateFavoriteButton();
+                progressLoading.setVisibility(View.GONE);
+                contentContainer.setVisibility(View.VISIBLE);
+            }
+        }
     }
 
     private void initViews(View view) {
@@ -139,7 +168,7 @@ public class DetailFragment extends Fragment {
         new Thread(() -> {
             movie = repository.getMovieById(movieId);
             isFavorite = repository.isFavorite(movieId);
-            WatchProgress progress = repository.getWatchProgress(movieId);
+            currentProgress = repository.getWatchProgress(movieId);
 
             if (!isAdded()) return;
 
@@ -152,7 +181,7 @@ public class DetailFragment extends Fragment {
 
                     // 显示内容（一次性渲染所有数据）
                     displayMovie();
-                    displayProgress(progress);
+                    displayProgress(currentProgress);
                     updateFavoriteButton();
 
                     contentContainer.setAlpha(0f);
@@ -199,18 +228,18 @@ public class DetailFragment extends Fragment {
         }
 
         if (StringUtils.isNotEmpty(movie.getDirector())) {
-            requireView().findViewById(R.id.director_container).setVisibility(View.VISIBLE);
+            rootView.findViewById(R.id.director_container).setVisibility(View.VISIBLE);
             tvDirector.setText(movie.getDirector());
         } else {
-            requireView().findViewById(R.id.director_container).setVisibility(View.GONE);
+            rootView.findViewById(R.id.director_container).setVisibility(View.GONE);
         }
 
         List<String> actors = movie.getActorList();
         if (!actors.isEmpty()) {
-            requireView().findViewById(R.id.actors_container).setVisibility(View.VISIBLE);
+            rootView.findViewById(R.id.actors_container).setVisibility(View.VISIBLE);
             tvActors.setText(StringUtils.join(actors, ", "));
         } else {
-            requireView().findViewById(R.id.actors_container).setVisibility(View.GONE);
+            rootView.findViewById(R.id.actors_container).setVisibility(View.GONE);
         }
 
         if (StringUtils.isNotEmpty(movie.getPlot())) {
@@ -226,7 +255,7 @@ public class DetailFragment extends Fragment {
         boolean posterExists = localPoster != null && !localPoster.isEmpty() && new File(localPoster).exists();
         
         // 横屏模式使用 poster，竖屏模式使用 thumb/detailPoster
-        boolean isLandscape = getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE;
+        boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
 
         if (isLandscape) {
             // 横屏：优先使用 poster
@@ -337,13 +366,13 @@ public class DetailFragment extends Fragment {
         super.onResume();
         if (movieId != null) {
             new Thread(() -> {
-                WatchProgress progress = repository.getWatchProgress(movieId);
+                currentProgress = repository.getWatchProgress(movieId);
 
                 if (!isAdded()) return;
 
                 requireActivity().runOnUiThread(() -> {
                     if (isAdded()) {
-                        displayProgress(progress);
+                        displayProgress(currentProgress);
                     }
                 });
             }).start();
