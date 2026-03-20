@@ -270,6 +270,18 @@ public class HomeFragment extends Fragment implements
             viewPagerFeatured.setCurrentItem(startPosition, false);
             viewPagerFeatured.setVisibility(View.VISIBLE);
 
+            // 在大屏幕设备上限制 ViewPager 宽度
+            int screenWidth = getResources().getDisplayMetrics().widthPixels;
+            int maxWidth = (int) (600 * getResources().getDisplayMetrics().density); // 最大 600dp
+            if (screenWidth > maxWidth) {
+                LinearLayout.LayoutParams pagerParams = new LinearLayout.LayoutParams(
+                        maxWidth,
+                        (int) (180 * getResources().getDisplayMetrics().density));
+                pagerParams.setMargins(0, (int) (8 * getResources().getDisplayMetrics().density), 0, (int) (16 * getResources().getDisplayMetrics().density));
+                pagerParams.gravity = android.view.Gravity.CENTER_HORIZONTAL;
+                viewPagerFeatured.setLayoutParams(pagerParams);
+            }
+
             // 强制触发一次布局刷新，以确保 PageTransformer 立即生效
             viewPagerFeatured.post(() -> {
                 if (isAdded() && viewPagerFeatured != null) {
