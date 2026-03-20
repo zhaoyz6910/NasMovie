@@ -250,4 +250,17 @@ public class MainActivity extends AppCompatActivity {
             bottomNavigation.setVisibility(View.GONE);
         }
     }
+
+    /**
+     * 通知 Fragment 的 view 已被重新 inflate
+     * 确保 Fragment 的显示状态正确
+     */
+    public void onFragmentViewReplaced(Fragment fragment) {
+        if (currentFragment == fragment) {
+            // 确保 Fragment 处于显示状态
+            getSupportFragmentManager().beginTransaction()
+                .show(fragment)
+                .commit();
+        }
+    }
 }

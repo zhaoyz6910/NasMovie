@@ -113,9 +113,10 @@ public class DetailFragment extends Fragment {
                 contentContainer.setVisibility(View.VISIBLE);
             }
             
-            // 确保底部导航栏保持隐藏
+            // 确保 Fragment 的显示状态正确，底部导航栏保持隐藏
             if (getActivity() instanceof MainActivity) {
                 ((MainActivity) getActivity()).hideBottomNavigation();
+                ((MainActivity) getActivity()).onFragmentViewReplaced(this);
             }
         }
     }
