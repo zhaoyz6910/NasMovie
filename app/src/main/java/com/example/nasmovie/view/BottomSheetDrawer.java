@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.nasmovie.R;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
@@ -120,10 +121,19 @@ public class BottomSheetDrawer extends BottomSheetDialogFragment {
             });
         }
         
-        // 设置 skipCollapsed
+        // 设置 skipCollapsed 并强制展开
         BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
         if (dialog != null) {
             dialog.getBehavior().setSkipCollapsed(true);
+            dialog.getBehavior().setState(BottomSheetBehavior.STATE_EXPANDED);
+            
+            // 在平板设备上设置宽度为屏幕宽度
+            if (bottomSheetView != null) {
+                android.util.DisplayMetrics metrics = new android.util.DisplayMetrics();
+                dialog.getWindow().getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                int screenWidth = metrics.widthPixels;
+                bottomSheetView.getLayoutParams().width = screenWidth;
+            }
         }
     }
 
