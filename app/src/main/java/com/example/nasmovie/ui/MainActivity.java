@@ -38,6 +38,10 @@ public class MainActivity extends AppCompatActivity {
     private static final long BACK_PRESS_INTERVAL = 2000; // 2 秒内再次按返回键退出
 
     private PreferenceManager preferenceManager;
+    
+    // 保存二级页面状态
+    private static final String KEY_IS_SUB_PAGE = "is_sub_page";
+    private boolean isSubPage = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,9 +59,32 @@ public class MainActivity extends AppCompatActivity {
         initViews();
         setupBackPressedHandler();
 
+        // 恢复二级页面状态
+        if (savedInstanceState != null) {
+            isSubPage = savedInstanceState.getBoolean(KEY_IS_SUB_PAGE, false);
+        }
+
         // 如果是第一次启动，加载首页 Fragment
         if (savedInstanceState == null) {
             loadHomeFragment();
+        }
+    }
+    
+    @Override
+    protected void onSaveInstanceState(@androidx.annotation.NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(KEY_IS_SUB_PAGE, isSubPage);
+    }
+    
+    @Override
+    protected void onRestoreInstanceState(@androidx.annotation.NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        isSubPage = savedInstanceState.getBoolean(KEY_IS_SUB_PAGE, false);
+        // 根据状态隐藏/显示底部导航
+        if (isSubPage) {
+            bottomNavigation.setVisibility(View.GONE);
+        } else {
+            bottomNavigation.setVisibility(View.VISIBLE);
         }
     }
 
@@ -192,6 +219,7 @@ public class MainActivity extends AppCompatActivity {
             backStack.add(currentFragment);
             // 隐藏底部导航
             bottomNavigation.setVisibility(android.view.View.GONE);
+            isSubPage = true;  // 标记为二级页面
             // 隐藏当前 Fragment，而不是销毁
             if (currentFragment != null) {
                 transaction.hide(currentFragment);
@@ -212,6 +240,7 @@ public class MainActivity extends AppCompatActivity {
             backStack.clear();
             // 显示底部导航
             bottomNavigation.setVisibility(android.view.View.VISIBLE);
+            isSubPage = false;  // 标记为主页面
             // Tab 切换：使用 replace
             transaction.replace(R.id.fragment_container, fragment, tag);
             transaction.setCustomAnimations(
@@ -268,6 +297,7 @@ public class MainActivity extends AppCompatActivity {
             // 如果回退到的是三个主 Tab 之一，显示底部导航
             if (targetFragment == homeFragment || targetFragment == favoritesFragment || targetFragment == settingsFragment) {
                 bottomNavigation.setVisibility(android.view.View.VISIBLE);
+                isSubPage = false;
             }
         } else {
             // 回退栈为空，说明在三个主 Tab 页面（首页、收藏、设置）
