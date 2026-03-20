@@ -1,6 +1,7 @@
 package com.example.nasmovie.ui;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -107,7 +108,15 @@ public class SettingsFragment extends Fragment {
     }
 
     private void showAboutDialog() {
-        showCustomDialog("关于", "NAS 影视库 v1.0\n一款基于 SMB 协议的 NAS 影视管理播放应用", "确定", null, null);
+        String versionName = "1.0";
+        try {
+            versionName = requireContext().getPackageManager()
+                    .getPackageInfo(requireContext().getPackageName(), 0).versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        String message = "NAS 影视库 v" + versionName + "\n一款基于 SMB 协议的 NAS 影视管理播放应用";
+        showCustomDialog("关于", message, "确定", null, null);
     }
 
     /**
