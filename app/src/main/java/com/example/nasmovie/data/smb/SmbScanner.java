@@ -5,6 +5,7 @@ import android.os.Looper;
 import android.util.Log;
 
 import com.example.nasmovie.data.model.SmbConfig;
+import com.example.nasmovie.util.AppExecutor;
 import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation;
 import com.hierynomus.smbj.share.DiskShare;
 
@@ -109,7 +110,7 @@ public class SmbScanner {
      * @param testPath 要测试的路径
      */
     public void testListPath(SmbConfig config, String testPath) {
-        new Thread(() -> {
+        AppExecutor.getInstance().runOnNetworkIO(() -> {
             try {
                 Log.d(TAG, "=== TEST LIST PATH ===");
                 Log.d(TAG, "Test Path: " + testPath);
@@ -153,7 +154,7 @@ public class SmbScanner {
             } catch (Exception e) {
                 Log.e(TAG, "Test failed: " + e.getMessage(), e);
             }
-        }).start();
+        });
     }
     public void setCallback(SmbScannerCallback callback) {
         this.callback = callback;

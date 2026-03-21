@@ -24,6 +24,7 @@ import com.example.nasmovie.data.repository.MovieRepository;
 import com.example.nasmovie.util.FileUtils;
 import com.example.nasmovie.util.StringUtils;
 import com.example.nasmovie.util.SmbImageLoader;
+import com.example.nasmovie.util.AppExecutor;
 import com.example.nasmovie.view.NasToolbar;
 import com.google.android.material.button.MaterialButton;
 
@@ -143,7 +144,7 @@ public class DetailFragment extends Fragment {
         progressLoading.setVisibility(View.VISIBLE);
         contentContainer.setVisibility(View.GONE);
 
-        new Thread(() -> {
+        AppExecutor.getInstance().runOnDiskIO(() -> {
             movie = repository.getMovieById(movieId);
             isFavorite = repository.isFavorite(movieId);
             currentProgress = repository.getWatchProgress(movieId);
@@ -174,7 +175,7 @@ public class DetailFragment extends Fragment {
                     }
                 }
             });
-        }).start();
+        });
     }
 
     private void displayMovie() {
@@ -321,7 +322,7 @@ public class DetailFragment extends Fragment {
     }
 
     private void toggleFavorite() {
-        new Thread(() -> {
+        AppExecutor.getInstance().runOnDiskIO(() -> {
             if (isFavorite) {
                 repository.removeFavorite(movieId);
             } else {
@@ -336,14 +337,14 @@ public class DetailFragment extends Fragment {
                     updateFavoriteButton();
                 }
             });
-        }).start();
+        });
     }
 
     @Override
     public void onResume() {
         super.onResume();
         if (movieId != null) {
-            new Thread(() -> {
+            AppExecutor.getInstance().runOnDiskIO(() -> {
                 currentProgress = repository.getWatchProgress(movieId);
 
                 if (!isAdded()) return;
@@ -353,7 +354,7 @@ public class DetailFragment extends Fragment {
                         displayProgress(currentProgress);
                     }
                 });
-            }).start();
+            });
         }
     }
 

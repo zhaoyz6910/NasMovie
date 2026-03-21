@@ -18,6 +18,7 @@ import com.example.nasmovie.data.db.SmbConfigDao;
 import com.example.nasmovie.data.model.SmbConfig;
 import com.example.nasmovie.service.ScanService;
 import com.example.nasmovie.ui.adapter.ServerAdapter;
+import com.example.nasmovie.util.AppExecutor;
 import com.example.nasmovie.view.BottomSheetDrawer;
 import com.example.nasmovie.view.NasToolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -105,7 +106,7 @@ public class ServerManageFragment extends Fragment implements
     }
 
     private void loadServers() {
-        new Thread(() -> {
+        AppExecutor.getInstance().runOnDiskIO(() -> {
             List<SmbConfig> servers = smbConfigDao.getAll();
             if (isAdded()) {
                 requireActivity().runOnUiThread(() -> {
@@ -113,7 +114,7 @@ public class ServerManageFragment extends Fragment implements
                     updateEmptyView();
                 });
             }
-        }).start();
+        });
     }
 
     private void updateEmptyView() {
@@ -145,7 +146,7 @@ public class ServerManageFragment extends Fragment implements
     }
 
     private void setAsDefaultServer(SmbConfig config) {
-        new Thread(() -> {
+        AppExecutor.getInstance().runOnDiskIO(() -> {
             // 先清除所有默认标记
             List<SmbConfig> allServers = smbConfigDao.getAll();
             for (SmbConfig server : allServers) {
@@ -163,17 +164,17 @@ public class ServerManageFragment extends Fragment implements
                     Toast.makeText(getContext(), "已设为默认服务器", Toast.LENGTH_SHORT).show();
                 });
             }
-        }).start();
+        });
     }
 
     private void deleteServer(SmbConfig config) {
         new BottomSheetDrawer.Builder()
             .addItem("取消", null)
             .addDestructiveItem("删除", () -> {
-                new Thread(() -> {
+                AppExecutor.getInstance().runOnDiskIO(() -> {
                     smbConfigDao.delete(config);
                     loadServers();
-                }).start();
+                });
             })
             .build()
             .show(getParentFragmentManager(), "DeleteConfirmDrawer");

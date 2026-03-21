@@ -22,6 +22,7 @@ import com.example.nasmovie.R;
 import com.example.nasmovie.data.model.Movie;
 import com.example.nasmovie.data.repository.MovieRepository;
 import com.example.nasmovie.ui.adapter.FavoriteAdapter;
+import com.example.nasmovie.util.AppExecutor;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
@@ -122,13 +123,13 @@ public class FavoritesFragment extends Fragment implements
     }
 
     private void loadFavorites() {
-        new Thread(() -> {
+        AppExecutor.getInstance().runOnDiskIO(() -> {
             allFavorites = repository.getFavoriteMovies();
             requireActivity().runOnUiThread(() -> {
                 adapter.setMovies(allFavorites);
                 updateEmptyView();
             });
-        }).start();
+        });
     }
 
     private void filterFavorites(String query) {
@@ -166,9 +167,9 @@ public class FavoritesFragment extends Fragment implements
 
         new androidx.appcompat.app.AlertDialog.Builder(getContext())
                 .setTitle("删除收藏")
-                .setMessage("确定要删除选中的 " + selectedIds.size() + " 部电影吗？")
+                .setMessage(getString(R.string.delete_favorites_confirm, selectedIds.size()))
                 .setPositiveButton("删除", (dialog, which) -> {
-                    new Thread(() -> {
+                    AppExecutor.getInstance().runOnDiskIO(() -> {
                         for (String movieId : selectedIds) {
                             repository.removeFavorite(movieId);
                         }
@@ -180,7 +181,7 @@ public class FavoritesFragment extends Fragment implements
                             updateEmptyView();
                             Toast.makeText(getContext(), "已删除 " + selectedIds.size() + " 部收藏", Toast.LENGTH_SHORT).show();
                         });
-                    }).start();
+                    });
                 })
                 .setNegativeButton("取消", null)
                 .show();

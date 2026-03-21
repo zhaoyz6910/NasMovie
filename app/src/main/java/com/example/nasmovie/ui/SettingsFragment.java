@@ -17,6 +17,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.example.nasmovie.R;
+import com.example.nasmovie.util.AppExecutor;
 import com.example.nasmovie.util.PreferenceManager;
 
 /**
@@ -95,7 +96,7 @@ public class SettingsFragment extends Fragment {
 
     private void clearCache() {
         showCustomDialog("清除缓存", "确定要清除所有图片缓存吗？", "确定", "取消", () -> {
-            new Thread(() -> {
+            AppExecutor.getInstance().runOnDiskIO(() -> {
                 // 执行清理逻辑
                 com.example.nasmovie.NASMovieApp.getInstance().getImageCache().clearCache();
                 if (isAdded() && getContext() != null) {
@@ -103,7 +104,7 @@ public class SettingsFragment extends Fragment {
                         android.widget.Toast.makeText(getContext(), "缓存已清除", android.widget.Toast.LENGTH_SHORT).show();
                     });
                 }
-            }).start();
+            });
         });
     }
 
@@ -115,7 +116,7 @@ public class SettingsFragment extends Fragment {
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
-        String message = "NAS 影视库 v" + versionName + "\n一款基于 SMB 协议的 NAS 影视管理播放应用";
+        String message = getString(R.string.about_message, versionName);
         showCustomDialog("关于", message, "确定", null, null);
     }
 

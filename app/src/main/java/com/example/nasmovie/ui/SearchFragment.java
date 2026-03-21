@@ -27,6 +27,7 @@ import com.example.nasmovie.data.local.SearchHistoryManager;
 import com.example.nasmovie.data.model.Movie;
 import com.example.nasmovie.data.repository.MovieRepository;
 import com.example.nasmovie.ui.adapter.SearchResultAdapter;
+import com.example.nasmovie.util.AppExecutor;
 import com.example.nasmovie.view.NasToolbar;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
@@ -159,10 +160,10 @@ public class SearchFragment extends Fragment implements
     }
 
     private void loadAllMovies() {
-        new Thread(() -> {
+        AppExecutor.getInstance().runOnDiskIO(() -> {
             allMovies = repository.getAllMovies();
             requireActivity().runOnUiThread(() -> showSearchHistory());
-        }).start();
+        });
     }
 
     private void setupSearchHistory() {
@@ -194,7 +195,7 @@ public class SearchFragment extends Fragment implements
         searchHistoryContainer.setVisibility(View.GONE);
         swipeRefreshLayout.setRefreshing(false);
 
-        new Thread(() -> {
+        AppExecutor.getInstance().runOnDiskIO(() -> {
             // 保存搜索记录
             historyManager.addSearchRecord(query);
             searchResults = repository.searchMovies(query);
@@ -211,7 +212,7 @@ public class SearchFragment extends Fragment implements
                     showResults();
                 }
             });
-        }).start();
+        });
     }
 
     private void showSearchHistory() {

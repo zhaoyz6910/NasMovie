@@ -87,6 +87,10 @@
     <string name="confirm">确定</string>
     <string name="cancel">取消</string>
     <string name="delete_confirm">确定要删除吗？</string>
+    <string name="delete_favorites_confirm">确定要删除选中的 %d 部电影吗？</string>
+
+    <!-- 关于 -->
+    <string name="about_message">NAS 影视库 v%1$s\n一款基于 SMB 协议的 NAS 影视管理播放应用</string>
 
     <!-- 时间格式 -->
     <string name="duration_format">%d分钟</string>

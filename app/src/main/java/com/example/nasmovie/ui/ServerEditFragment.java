@@ -20,6 +20,7 @@ import com.example.nasmovie.data.db.AppDatabase;
 import com.example.nasmovie.data.db.SmbConfigDao;
 import com.example.nasmovie.data.model.SmbConfig;
 import com.example.nasmovie.data.smb.SmbClient;
+import com.example.nasmovie.util.AppExecutor;
 import com.example.nasmovie.view.NasToolbar;
 
 /**
@@ -119,7 +120,7 @@ public class ServerEditFragment extends Fragment {
     }
 
     private void loadServerData() {
-        new Thread(() -> {
+        AppExecutor.getInstance().runOnDiskIO(() -> {
             SmbConfig config = smbConfigDao.getById(serverId);
             if (config != null && isAdded()) {
                 requireActivity().runOnUiThread(() -> {
@@ -132,7 +133,7 @@ public class ServerEditFragment extends Fragment {
                     etPassword.setText(config.getPassword());
                 });
             }
-        }).start();
+        });
     }
 
     private void testConnection() {
@@ -141,7 +142,7 @@ public class ServerEditFragment extends Fragment {
 
         Toast.makeText(getContext(), "正在测试连接...", Toast.LENGTH_SHORT).show();
         
-        new Thread(() -> {
+        AppExecutor.getInstance().runOnNetworkIO(() -> {
             SmbClient client = new SmbClient();
             boolean success = client.testConnection(config);
             
@@ -157,14 +158,14 @@ public class ServerEditFragment extends Fragment {
                     }
                 });
             }
-        }).start();
+        });
     }
 
     private void saveServer() {
         final SmbConfig config = getConfigFromInput();
         if (config == null) return;
 
-        new Thread(() -> {
+        AppExecutor.getInstance().runOnDiskIO(() -> {
             try {
                 if (serverId > 0) {
                     config.setId(serverId);
@@ -199,7 +200,7 @@ public class ServerEditFragment extends Fragment {
                     });
                 }
             }
-        }).start();
+        });
     }
 
     private SmbConfig getConfigFromInput() {

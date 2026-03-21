@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.example.nasmovie.data.model.SmbConfig;
+import com.example.nasmovie.util.AppExecutor;
 
 import java.util.List;
 
@@ -166,7 +167,7 @@ public class SmbScanManager {
      * @param listener 结果监听
      */
     public void testConnectionAsync(SmbConfig config, ConnectionTestListener listener) {
-        new Thread(() -> {
+        AppExecutor.getInstance().runOnNetworkIO(() -> {
             SmbClient client = new SmbClient();
             boolean result = client.connect(config);
             client.disconnect();
@@ -175,7 +176,7 @@ public class SmbScanManager {
                 android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
                 handler.post(() -> listener.onResult(result));
             }
-        }).start();
+        });
     }
 
     /**
