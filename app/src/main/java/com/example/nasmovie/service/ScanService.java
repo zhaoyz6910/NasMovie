@@ -32,7 +32,9 @@ public class ScanService {
 
     private static final String TAG = "ScanService";
     
-    // 最大递归深度，防止无限递归
+    // 最大递归深度，防止无限递归扫描
+    // 设为 5 是因为大多数电影库结构不会超过 5 层目录嵌套
+    // 例如: /电影/类型/电影名/CD1/video.mkv 已是 4 层
     private static final int MAX_RECURSION_DEPTH = 5;
 
     private final Context context;
@@ -165,7 +167,7 @@ public class ScanService {
         try (SmbClient client = new SmbClient()) {
             currentClient = client;
             safeCallback(() -> callback.onServerStart(config));
-            Log.i(TAG, "开始连接服务器: " + config.getHost());
+            Log.i(TAG, "开始连接服务器");
 
             if (!client.connect(config)) {
                 safeCallback(() -> callback.onError("无法连接服务器: " + config.getName()));
@@ -213,7 +215,7 @@ public class ScanService {
             return addedCount;
 
         } catch (Exception e) {
-            Log.e(TAG, "Scan internal error: " + config.getName(), e);
+            Log.e(TAG, "Scan internal error", e);
             return 0;
         } finally {
             currentClient = null;

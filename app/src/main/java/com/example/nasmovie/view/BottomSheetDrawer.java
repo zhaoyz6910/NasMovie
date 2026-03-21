@@ -129,11 +129,30 @@ public class BottomSheetDrawer extends BottomSheetDialogFragment {
             
             // 在平板设备上设置宽度为屏幕宽度
             if (bottomSheetView != null) {
-                android.util.DisplayMetrics metrics = new android.util.DisplayMetrics();
-                dialog.getWindow().getWindowManager().getDefaultDisplay().getMetrics(metrics);
-                int screenWidth = metrics.widthPixels;
+                int screenWidth = getScreenWidth();
                 bottomSheetView.getLayoutParams().width = screenWidth;
             }
+        }
+    }
+
+    /**
+     * 获取屏幕宽度，兼容不同 Android 版本
+     */
+    @SuppressWarnings("deprecation")
+    private int getScreenWidth() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            // Android 11+ 使用 WindowMetrics
+            android.view.WindowMetrics windowMetrics = requireContext().getSystemService(android.view.WindowManager.class).getCurrentWindowMetrics();
+            return windowMetrics.getBounds().width();
+        } else {
+            // Android 10 及以下使用旧 API
+            android.util.DisplayMetrics metrics = new android.util.DisplayMetrics();
+            android.view.WindowManager windowManager = (android.view.WindowManager) requireContext().getSystemService(Context.WINDOW_SERVICE);
+            if (windowManager != null) {
+                windowManager.getDefaultDisplay().getMetrics(metrics);
+                return metrics.widthPixels;
+            }
+            return getResources().getDisplayMetrics().widthPixels;
         }
     }
 

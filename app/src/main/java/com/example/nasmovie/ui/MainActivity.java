@@ -35,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
 
     // 双击退出标志
     private long lastBackPressTime = 0;
+    // 双击退出间隔时间（毫秒）
+    // 设为 2 秒是 Android 应用的标准交互体验
     private static final long BACK_PRESS_INTERVAL = 2000;
 
     private PreferenceManager preferenceManager;

@@ -33,7 +33,9 @@ public class SmbDeviceScanner {
     // 扫描超时时间（毫秒）
     private static final int CONNECT_TIMEOUT = 1000;
 
-    // 线程池大小
+    // 线程池大小，用于并发扫描 IP 段
+    // 设为 50 是平衡扫描速度和系统资源的折中值
+    // 过大会导致系统资源占用过高，过小则扫描速度慢
     private static final int THREAD_POOL_SIZE = 50;
 
     // 回调接口
@@ -205,7 +207,7 @@ public class SmbDeviceScanner {
     private DiscoveredDevice scanIp(String ip) {
         // 先检查 SMB 445 端口
         if (isPortOpen(ip, SMB_PORT)) {
-            Log.d(TAG, "Found SMB server at " + ip + ":" + SMB_PORT);
+            Log.d(TAG, "Found SMB server");
 
             DiscoveredDevice device = new DiscoveredDevice();
             device.setIp(ip);

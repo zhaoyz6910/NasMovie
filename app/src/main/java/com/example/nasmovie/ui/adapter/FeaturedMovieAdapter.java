@@ -54,7 +54,8 @@ public class FeaturedMovieAdapter extends RecyclerView.Adapter<FeaturedMovieAdap
         holder.bind(movie, actualPosition);
     }
 
-    // 虚拟项目数量，用于实现无限循环效果（使用较小的值避免潜在问题）
+    // ViewPager 虚拟数量，用于实现无限轮播效果
+    // 设为 10000 是一个足够大的数，用户几乎不可能滑到边界
     private static final int VIRTUAL_COUNT = 10000;
 
     @Override

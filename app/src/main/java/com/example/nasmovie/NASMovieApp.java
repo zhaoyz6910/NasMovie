@@ -37,6 +37,7 @@ public class NASMovieApp extends Application implements Application.ActivityLife
     private int startedActivityCount = 0;
 
     // 最小后台时间（毫秒），超过此时间返回需要显示锁屏
+    // 设为 500ms 是为了防止短暂切换应用（如通知栏）时误触发锁屏
     private static final long MIN_BACKGROUND_TIME_FOR_LOCK = 500;
 
     // Handler 用于延迟操作

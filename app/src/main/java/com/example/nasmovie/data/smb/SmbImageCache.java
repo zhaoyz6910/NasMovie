@@ -27,7 +27,9 @@ public class SmbImageCache {
     // 缓存目录名
     private static final String CACHE_DIR = "poster_cache";
 
-    // 最大缓存大小 (100MB)
+    // 最大缓存大小（100MB）
+    // 设为 100MB 是平衡海报质量和存储空间的折中值
+    // 假设每张海报约 200KB，可缓存约 500 张海报
     private static final long MAX_CACHE_SIZE = 100 * 1024 * 1024;
 
     // 线程池

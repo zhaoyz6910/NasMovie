@@ -18,6 +18,8 @@ public class SearchHistoryManager {
 
     private static final String PREF_NAME = "search_history_pref";
     private static final String KEY_HISTORY = "search_history";
+    // 最大历史记录数量
+    // 设为 10 是平衡用户需求和存储空间的合理值
     private static final int MAX_HISTORY_SIZE = 10;
 
     private final SharedPreferences preferences;

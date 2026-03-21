@@ -24,6 +24,8 @@ import java.util.List;
  */
 public class LockActivity extends AppCompatActivity implements View.OnClickListener {
 
+    // 密码长度
+    // 设为 4 位是平衡安全性和易用性的常见选择
     private static final int PASSWORD_LENGTH = 4;
 
     private TextView tvTitle;

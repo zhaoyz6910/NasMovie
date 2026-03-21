@@ -43,6 +43,7 @@ out/
 # Signing files
 *.jks
 *.keystore
+keystore.properties
 
 # Version control
 .svn/

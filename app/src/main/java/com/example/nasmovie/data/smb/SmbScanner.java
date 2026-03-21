@@ -112,8 +112,6 @@ public class SmbScanner {
         new Thread(() -> {
             try {
                 Log.d(TAG, "=== TEST LIST PATH ===");
-                Log.d(TAG, "Host: " + config.getHost());
-                Log.d(TAG, "Share: " + config.getShareName());
                 Log.d(TAG, "Test Path: " + testPath);
 
                 SmbClient client = new SmbClient();
@@ -202,7 +200,7 @@ public class SmbScanner {
      * 执行扫描
      */
     private void performScan(SmbConfig config, String startPath, boolean recursive) throws Exception {
-        Log.d(TAG, "Starting scan: " + config.getHost() + ", path: " + startPath);
+        Log.d(TAG, "Starting scan, path: " + startPath);
 
         // 连接到 SMB 服务器
         boolean connected = smbClient.connect(config);

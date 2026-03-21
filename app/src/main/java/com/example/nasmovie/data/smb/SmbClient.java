@@ -57,7 +57,7 @@ public class SmbClient implements AutoCloseable {
             // 创建连接
             connection = smbClient.connect(config.getHost(), config.getPort());
             if (connection == null) {
-                Log.e(TAG, "Failed to connect to server: " + config.getHost());
+                Log.e(TAG, "Failed to connect to server");
                 return false;
             }
 
@@ -83,24 +83,24 @@ public class SmbClient implements AutoCloseable {
             // 连接到共享文件夹
             diskShare = (DiskShare) session.connectShare(config.getShareName());
             if (diskShare == null) {
-                Log.e(TAG, "Failed to connect to share: " + config.getShareName());
+                Log.e(TAG, "Failed to connect to share");
                 return false;
             }
 
             connected = true;
-            Log.i(TAG, "Connected to SMB server: " + config.getHost());
+            Log.i(TAG, "Connected to SMB server");
             return true;
 
         } catch (java.net.UnknownHostException e) {
-            Log.e(TAG, "Unknown host: " + config.getHost());
+            Log.e(TAG, "Unknown host");
             disconnect();
             return false;
         } catch (java.net.ConnectException e) {
-            Log.e(TAG, "Connection refused: " + config.getHost() + ":" + config.getPort());
+            Log.e(TAG, "Connection refused");
             disconnect();
             return false;
         } catch (java.io.IOException e) {
-            Log.e(TAG, "IO error connecting to " + config.getHost() + ": " + e.getMessage());
+            Log.e(TAG, "IO error connecting: " + e.getMessage());
             disconnect();
             return false;
         } catch (SMBApiException e) {

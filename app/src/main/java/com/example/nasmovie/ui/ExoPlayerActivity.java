@@ -39,6 +39,7 @@ import com.example.nasmovie.data.smb.SmbClient;
 import com.example.nasmovie.data.smb.SmbDataSource;
 import com.example.nasmovie.player.PlayerGestureHandler;
 import com.example.nasmovie.player.SubtitleManager;
+import com.example.nasmovie.util.AppExecutor;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -56,6 +57,8 @@ public class ExoPlayerActivity extends AppCompatActivity implements
 
     public static final String EXTRA_MOVIE_ID = "movie_id";
     private static final String TAG = "ExoPlayerActivity";
+    // 控件自动隐藏延迟时间（毫秒）
+    // 设为 3 秒是视频播放器的常见交互体验
     private static final int HIDE_CONTROLS_DELAY = 3000;
 
     // ExoPlayer
@@ -87,8 +90,8 @@ public class ExoPlayerActivity extends AppCompatActivity implements
     private boolean isControlsVisible = true;
     private boolean isFullscreen = false;
 
-    // Handler
-    private final Handler handler = new Handler(Looper.getMainLooper());
+    // Handler - 使用静态内部类避免内存泄漏
+    private final SafeHandler safeHandler = new SafeHandler(this);
     private Runnable hideControlsRunnable;
     private Runnable updateProgressRunnable;
 
@@ -181,7 +184,7 @@ public class ExoPlayerActivity extends AppCompatActivity implements
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                handler.removeCallbacks(hideControlsRunnable);
+                safeHandler.removeCallbacks(hideControlsRunnable);
             }
 
             @Override
@@ -225,7 +228,7 @@ public class ExoPlayerActivity extends AppCompatActivity implements
             @Override
             public void run() {
                 updateProgress();
-                handler.postDelayed(this, 1000);
+                safeHandler.postDelayed(this, 1000);
             }
         };
 
@@ -308,7 +311,7 @@ public class ExoPlayerActivity extends AppCompatActivity implements
     private void loadMovie() {
         loadingView.setVisibility(View.VISIBLE);
 
-        new Thread(() -> {
+        AppExecutor.getInstance().runOnDiskIO(() -> {
             movie = repository.getMovieById(movieId);
             if (movie != null) {
                 WatchProgress progress = repository.getWatchProgress(movieId);
@@ -316,7 +319,7 @@ public class ExoPlayerActivity extends AppCompatActivity implements
                     startPosition = progress.getPosition();
                 }
             }
-            runOnUiThread(() -> {
+            AppExecutor.getInstance().runOnMainThread(() -> {
                 if (movie != null) {
                     tvTitle.setText(movie.getTitle());
                     playMovie();
@@ -324,29 +327,29 @@ public class ExoPlayerActivity extends AppCompatActivity implements
                     finish();
                 }
             });
-        }).start();
+        });
     }
 
     private void playMovie() {
-        new Thread(() -> {
+        AppExecutor.getInstance().runOnNetworkIO(() -> {
             try {
                 SmbConfig config = NASMovieApp.getInstance().getDatabase()
                     .smbConfigDao().getById(Long.parseLong(movie.getServerId()));
 
                 if (config == null) {
                     Log.e(TAG, "SMB config not found");
-                    runOnUiThread(() -> loadingView.setVisibility(View.GONE));
+                    AppExecutor.getInstance().runOnMainThread(() -> loadingView.setVisibility(View.GONE));
                     return;
                 }
 
                 // Build SMB URI
                 String smbUri = buildSmbUri(config, movie.getVideoPath());
-                Log.d(TAG, "Playing SMB video: " + smbUri);
+                Log.d(TAG, "Playing video...");
 
                 // Load subtitles
                 loadSubtitles(config);
 
-                runOnUiThread(() -> {
+                AppExecutor.getInstance().runOnMainThread(() -> {
                     // Create SMB DataSource Factory
                     SmbDataSource.Factory smbDataSourceFactory = new SmbDataSource.Factory(config);
 
@@ -361,9 +364,9 @@ public class ExoPlayerActivity extends AppCompatActivity implements
 
             } catch (Exception e) {
                 Log.e(TAG, "Error playing movie", e);
-                runOnUiThread(() -> loadingView.setVisibility(View.GONE));
+                AppExecutor.getInstance().runOnMainThread(() -> loadingView.setVisibility(View.GONE));
             }
-        }).start();
+        });
     }
 
     private String buildSmbUri(SmbConfig config, String videoPath) {
@@ -488,21 +491,21 @@ public class ExoPlayerActivity extends AppCompatActivity implements
         isControlsVisible = false;
         topBar.setVisibility(View.GONE);
         controlsLayout.setVisibility(View.GONE);
-        handler.removeCallbacks(hideControlsRunnable);
+        safeHandler.removeCallbacks(hideControlsRunnable);
         adjustSubtitlePosition(false);
     }
 
     private void startHideControlsTimer() {
-        handler.removeCallbacks(hideControlsRunnable);
-        handler.postDelayed(hideControlsRunnable, HIDE_CONTROLS_DELAY);
+        safeHandler.removeCallbacks(hideControlsRunnable);
+        safeHandler.postDelayed(hideControlsRunnable, HIDE_CONTROLS_DELAY);
     }
 
     private void startProgressUpdate() {
-        handler.post(updateProgressRunnable);
+        safeHandler.post(updateProgressRunnable);
     }
 
     private void stopProgressUpdate() {
-        handler.removeCallbacks(updateProgressRunnable);
+        safeHandler.removeCallbacks(updateProgressRunnable);
     }
 
     private void updateProgress() {
@@ -549,7 +552,7 @@ public class ExoPlayerActivity extends AppCompatActivity implements
         long durationMs = player.getDuration();
 
         if (position > 0 && durationMs != C.TIME_UNSET && durationMs > 0) {
-            new Thread(() -> {
+            AppExecutor.getInstance().runOnDiskIO(() -> {
                 repository.saveWatchProgress(movieId, position, durationMs);
 
                 if (movie != null && (movie.getDuration() <= 0)) {
@@ -557,10 +560,10 @@ public class ExoPlayerActivity extends AppCompatActivity implements
                     if (durationMinutes > 0) {
                         movie.setDuration(durationMinutes);
                         repository.saveMovie(movie);
-                        Log.d(TAG, "Updated movie duration to: " + durationMinutes + " mins");
+                        Log.d(TAG, "Updated movie duration");
                     }
                 }
-            }).start();
+            });
         }
     }
 
@@ -615,8 +618,8 @@ public class ExoPlayerActivity extends AppCompatActivity implements
 
         // 重要：先移除所有 Handler 回调，避免回调访问已释放的 player
         stopProgressUpdate();
-        handler.removeCallbacks(hideControlsRunnable);
-        handler.removeCallbacksAndMessages(null);
+        safeHandler.removeCallbacks(hideControlsRunnable);
+        safeHandler.removeCallbacksAndMessages(null);
 
         // 然后再释放 player
         if (player != null) {
@@ -743,5 +746,26 @@ public class ExoPlayerActivity extends AppCompatActivity implements
             tvSubtitle.setLayoutParams(params);
         });
         animator.start();
+    }
+
+    /**
+     * 安全的 Handler 静态内部类，避免内存泄漏
+     */
+    private static class SafeHandler extends Handler {
+        private final java.lang.ref.WeakReference<ExoPlayerActivity> activityRef;
+
+        SafeHandler(ExoPlayerActivity activity) {
+            super(Looper.getMainLooper());
+            this.activityRef = new java.lang.ref.WeakReference<>(activity);
+        }
+
+        @Override
+        public void handleMessage(android.os.Message msg) {
+            ExoPlayerActivity activity = activityRef.get();
+            if (activity == null || activity.isFinishing()) {
+                return;
+            }
+            super.handleMessage(msg);
+        }
     }
 }

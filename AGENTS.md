@@ -55,7 +55,7 @@ app/src/main/java/com/example/nasmovie/
 - **WatchProgress**: 观看进度记录
 - **Favorite**: 收藏记录
 
-### 数据库版本: 5
+### 数据库版本: 6
 
 ## 构建与运行
 
@@ -142,8 +142,13 @@ app/src/main/java/com/example/nasmovie/
 
 ### 签名配置
 - Release 签名密钥: `nasmovie-key.jks`
-- 密钥别名: `nasmovie`
-- 密钥密码: `nasmovie123`
+- 签名配置文件: `keystore.properties` (需自行创建)
+- 配置文件格式:
+  ```properties
+  storePassword=你的密钥库密码
+  keyAlias=nasmovie
+  keyPassword=你的密钥密码
+  ```
 
 ### 权限要求
 - `INTERNET` - SMB 网络访问

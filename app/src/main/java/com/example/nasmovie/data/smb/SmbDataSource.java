@@ -172,7 +172,7 @@ public class SmbDataSource extends BaseDataSource {
             throw new IOException("Failed to connect to share: " + config.getShareName());
         }
 
-        Log.d(TAG, "Connected to SMB server: " + config.getHost());
+        Log.d(TAG, "Connected to SMB server");
     }
 
     private void closeConnection() {

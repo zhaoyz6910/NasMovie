@@ -26,6 +26,7 @@ import com.example.nasmovie.data.model.WatchProgress;
 import com.example.nasmovie.data.repository.MovieRepository;
 import com.example.nasmovie.ui.adapter.FeaturedMovieAdapter;
 import com.example.nasmovie.ui.adapter.MainContentAdapter;
+import com.example.nasmovie.util.AppExecutor;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.lang.ref.WeakReference;
@@ -238,7 +239,7 @@ public class HomeFragment extends Fragment implements
         progressBar.setVisibility(View.VISIBLE);
         emptyView.setVisibility(View.GONE);
 
-        new Thread(() -> {
+        AppExecutor.getInstance().runOnDiskIO(() -> {
             allMovies = repository.getAllMovies(currentSortType);
 
             List<Movie> featuredMovies = getRandomMovies(5);
@@ -248,10 +249,7 @@ public class HomeFragment extends Fragment implements
 
             if (!isAdded()) return;
 
-            androidx.fragment.app.FragmentActivity activity = getActivity();
-            if (activity == null || activity.isFinishing()) return;
-
-            activity.runOnUiThread(() -> {
+            AppExecutor.getInstance().runOnMainThread(() -> {
                 if (!isAdded()) return;
 
                 progressBar.setVisibility(View.GONE);
@@ -266,7 +264,7 @@ public class HomeFragment extends Fragment implements
                 // 标记数据已加载
                 isDataLoaded = true;
             });
-        }).start();
+        });
     }
 
     private void showEmptyView() {
