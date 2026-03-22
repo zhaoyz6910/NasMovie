@@ -76,17 +76,40 @@ jobs:
           name: debug-apk
           path: app/build/outputs/apk/debug/*.apk
 
-      # 11. 创建 Release 并上传（仅在打 tag 时）
+      # 11. 获取提交日志
+      - name: Generate Changelog
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        id: changelog
+        run: |
+          # 获取上一个标签
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
+          if [ -z "$PREV_TAG" ]; then
+            # 如果没有上一个标签，获取所有提交
+            echo "commits<<EOF" >> $GITHUB_OUTPUT
+            git log --pretty=format:"- %s" --no-merges >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            # 获取两个标签之间的提交
+            echo "commits<<EOF" >> $GITHUB_OUTPUT
+            git log --pretty=format:"- %s" --no-merges ${PREV_TAG}..HEAD >> $GITHUB_OUTPUT
+            echo "" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      # 12. 创建 Release 并上传（仅在打 tag 时）
       - name: Create Release
         uses: softprops/action-gh-release@v1
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
         with:
           files: |
             app/build/outputs/apk/release/*.apk
-          generate_release_notes: true
           name: "NasMovie ${{ github.ref_name }}"
           body: |
             ## NAS 影视管理应用 ${{ github.ref_name }}
+
+            ### 本次更新
+            ${{ steps.changelog.outputs.commits }}
 
             ### 安装说明
             - 下载 APK 文件安装
@@ -99,7 +122,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 12. 清理签名文件
+      # 13. 清理签名文件
       - name: Cleanup
         if: always()
         run: |
