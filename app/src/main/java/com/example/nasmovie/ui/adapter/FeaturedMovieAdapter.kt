@@ -74,7 +74,7 @@ class FeaturedMovieAdapter : RecyclerView.Adapter<FeaturedMovieAdapter.ViewHolde
             }
         }
 
-        fun bind(movie: Movie, actualPosition: Int) {
+        fun bind(movie: Movie, @Suppress("UNUSED_PARAMETER") actualPosition: Int) {
             this.currentMovie = movie
             // 加载详情海报（使用localThumbPath）
             SmbImageLoader.loadDetailPoster(itemView.context, movie, imagePoster)

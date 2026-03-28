@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 
 class DetailViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = MovieRepository(application)
+    private val repository = MovieRepository()
     private var currentMovieId: String? = null
 
     private val _movie = MutableLiveData<Movie?>()

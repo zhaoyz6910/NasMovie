@@ -165,18 +165,18 @@ class DetailFragment : Fragment() {
         }
 
         if (StringUtils.isNotEmpty(movie.director)) {
-            binding.directorContainer?.visibility = View.VISIBLE
+            binding.directorContainer.visibility = View.VISIBLE
             binding.tvDirector.text = movie.director
         } else {
-            binding.directorContainer?.visibility = View.GONE
+            binding.directorContainer.visibility = View.GONE
         }
 
         val actors = movie.actorList
         if (actors.isNotEmpty()) {
-            binding.actorsContainer?.visibility = View.VISIBLE
+            binding.actorsContainer.visibility = View.VISIBLE
             binding.tvActors.text = StringUtils.join(actors, ", ")
         } else {
-            binding.actorsContainer?.visibility = View.GONE
+            binding.actorsContainer.visibility = View.GONE
         }
 
         if (StringUtils.isNotEmpty(movie.plot)) {
@@ -199,7 +199,7 @@ class DetailFragment : Fragment() {
             when {
                 posterExists -> {
                     Glide.with(requireContext())
-                        .load(File(localPoster))
+                        .load(File(localPoster!!))
                         .placeholder(R.drawable.bg_poster_placeholder)
                         .error(R.drawable.bg_poster_placeholder)
                         .transition(DrawableTransitionOptions.withCrossFade(300))
@@ -210,7 +210,7 @@ class DetailFragment : Fragment() {
                 }
                 thumbExists -> {
                     Glide.with(requireContext())
-                        .load(File(localThumb))
+                        .load(File(localThumb!!))
                         .placeholder(R.drawable.bg_poster_placeholder)
                         .error(R.drawable.bg_poster_placeholder)
                         .transition(DrawableTransitionOptions.withCrossFade(300))
@@ -231,7 +231,7 @@ class DetailFragment : Fragment() {
             when {
                 thumbExists -> {
                     Glide.with(requireContext())
-                        .load(File(localThumb))
+                        .load(File(localThumb!!))
                         .placeholder(R.drawable.bg_poster_placeholder)
                         .error(R.drawable.bg_poster_placeholder)
                         .transition(DrawableTransitionOptions.withCrossFade(300))
@@ -242,7 +242,7 @@ class DetailFragment : Fragment() {
                 }
                 posterExists -> {
                     Glide.with(requireContext())
-                        .load(File(localPoster))
+                        .load(File(localPoster!!))
                         .placeholder(R.drawable.bg_poster_placeholder)
                         .error(R.drawable.bg_poster_placeholder)
                         .transition(DrawableTransitionOptions.withCrossFade(300))
@@ -275,13 +275,11 @@ class DetailFragment : Fragment() {
 
     private fun updateFavoriteButton(isFav: Boolean?) {
         val isFavSafe = isFav ?: false
-        binding.btnFavorite?.let { btn ->
-            btn.setIconResource(R.drawable.ic_favorite)
-            if (isFavSafe) {
-                btn.setIconTintResource(R.color.iosBlue)
-            } else {
-                btn.setIconTintResource(R.color.iosGray)
-            }
+        binding.btnFavorite.setIconResource(R.drawable.ic_favorite)
+        if (isFavSafe) {
+            binding.btnFavorite.setIconTintResource(R.color.iosBlue)
+        } else {
+            binding.btnFavorite.setIconTintResource(R.color.iosGray)
         }
     }
 

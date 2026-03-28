@@ -1,6 +1,5 @@
 package com.example.nasmovie.data.repository
 
-import android.content.Context
 import com.example.nasmovie.NASMovieApp
 import com.example.nasmovie.data.db.AppDatabase
 import com.example.nasmovie.data.db.FavoriteDao
@@ -16,7 +15,7 @@ import kotlinx.coroutines.withContext
  * 电影数据仓库 (Kotlin 协程重构版)
  * 统一管理本地数据库操作
  */
-class MovieRepository(context: Context) {
+class MovieRepository {
 
     enum class SortType {
         TITLE_ASC,      // 标题 A-Z

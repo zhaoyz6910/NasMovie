@@ -188,7 +188,7 @@ object SmbImageLoader {
     /**
      * 下载并加载图片
      */
-    private fun downloadAndLoad(context: Context, posterPath: String, serverId: String?, imageView: ImageView) {
+    private fun downloadAndLoad(@Suppress("UNUSED_PARAMETER") context: Context, posterPath: String, serverId: String?, imageView: ImageView) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 // 从数据库获取服务器配置
@@ -246,7 +246,7 @@ object SmbImageLoader {
      * 预加载图片（用于列表滑动优化）
      */
     @JvmStatic
-    fun preloadPoster(context: Context, posterPath: String?, serverId: String?) {
+    fun preloadPoster(@Suppress("UNUSED_PARAMETER") context: Context, posterPath: String?, serverId: String?) {
         if (posterPath == null || imageCache == null) return
 
         // 如果已缓存，跳过

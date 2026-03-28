@@ -145,8 +145,8 @@ class MovieCard @JvmOverloads constructor(
             CardMode.GRID -> {
                 // 网格模式：显示评分徽章、年份、时长
                 ratingBadge?.visibility = if (hasRating) View.VISIBLE else View.GONE
-                tvYear?.visibility = if (tvYear.text.isNullOrEmpty()) View.GONE else View.VISIBLE
-                tvDuration?.visibility = if (tvDuration.text.isNullOrEmpty()) View.GONE else View.VISIBLE
+                tvYear.visibility = if (tvYear.text.isNullOrEmpty()) View.GONE else View.VISIBLE
+                tvDuration.visibility = if (tvDuration.text.isNullOrEmpty()) View.GONE else View.VISIBLE
                 divider?.visibility = View.VISIBLE
                 selectionOverlay?.visibility = View.GONE
             }
@@ -154,7 +154,7 @@ class MovieCard @JvmOverloads constructor(
             CardMode.LIST -> {
                 // 列表模式：简洁显示
                 ratingBadge?.visibility = View.GONE
-                tvDuration?.visibility = View.GONE
+                tvDuration.visibility = View.GONE
                 divider?.visibility = View.GONE
                 selectionOverlay?.visibility = View.GONE
             }
@@ -162,8 +162,8 @@ class MovieCard @JvmOverloads constructor(
             CardMode.HORIZONTAL -> {
                 // 横向模式：显示评分徽章、标题
                 ratingBadge?.visibility = if (hasRating) View.VISIBLE else View.GONE
-                tvYear?.visibility = View.GONE
-                tvDuration?.visibility = View.GONE
+                tvYear.visibility = View.GONE
+                tvDuration.visibility = View.GONE
                 divider?.visibility = View.GONE
                 selectionOverlay?.visibility = View.GONE
             }
@@ -171,8 +171,8 @@ class MovieCard @JvmOverloads constructor(
             CardMode.FAVORITE -> {
                 // 收藏模式：显示评分徽章、标题、选中状态
                 ratingBadge?.visibility = if (hasRating) View.VISIBLE else View.GONE
-                tvYear?.visibility = View.GONE
-                tvDuration?.visibility = View.GONE
+                tvYear.visibility = View.GONE
+                tvDuration.visibility = View.GONE
                 divider?.visibility = View.GONE
                 selectionOverlay?.visibility = View.GONE
             }
@@ -180,8 +180,8 @@ class MovieCard @JvmOverloads constructor(
             CardMode.SEARCH -> {
                 // 搜索模式：完整信息
                 ratingBadge?.visibility = if (hasRating) View.VISIBLE else View.GONE
-                tvYear?.visibility = if (tvYear.text.isNullOrEmpty()) View.GONE else View.VISIBLE
-                tvDuration?.visibility = if (tvDuration.text.isNullOrEmpty()) View.GONE else View.VISIBLE
+                tvYear.visibility = if (tvYear.text.isNullOrEmpty()) View.GONE else View.VISIBLE
+                tvDuration.visibility = if (tvDuration.text.isNullOrEmpty()) View.GONE else View.VISIBLE
                 divider?.visibility = View.VISIBLE
                 selectionOverlay?.visibility = View.GONE
             }

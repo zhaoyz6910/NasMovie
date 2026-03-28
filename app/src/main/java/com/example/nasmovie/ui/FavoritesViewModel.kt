@@ -12,7 +12,7 @@ import java.util.Locale
 
 class FavoritesViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = MovieRepository(application)
+    private val repository = MovieRepository()
 
     private val _allFavorites = MutableLiveData<List<Movie>>()
     

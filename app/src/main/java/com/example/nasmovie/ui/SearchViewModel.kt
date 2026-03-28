@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 
 class SearchViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = MovieRepository(application)
+    private val repository = MovieRepository()
     private val historyManager = SearchHistoryManager(application)
 
     private val _searchResults = MutableLiveData<List<Movie>?>()

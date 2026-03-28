@@ -46,19 +46,17 @@ class FavoritesFragment : Fragment(),
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewModel = ViewModelProvider(this)[FavoritesViewModel::class.java]
-        initViews(view)
+        initViews()
         observeViewModel()
     }
 
-    private fun initViews(view: View) {
+    private fun initViews() {
         // 设置 Toolbar
-        binding.toolbar?.let { toolbar ->
-            toolbar.setTitle("我的收藏")
-            toolbar.setShowBack(false)
-            (activity as? AppCompatActivity)?.let { activity ->
-                activity.setSupportActionBar(toolbar.toolbar)
-                activity.supportActionBar?.setDisplayShowTitleEnabled(false)
-            }
+        binding.toolbar.setTitle("我的收藏")
+        binding.toolbar.setShowBack(false)
+        (activity as? AppCompatActivity)?.let { activity ->
+            activity.setSupportActionBar(binding.toolbar.toolbar)
+            activity.supportActionBar?.setDisplayShowTitleEnabled(false)
         }
 
         // 根据屏幕宽度计算列数，卡片宽度约 120dp

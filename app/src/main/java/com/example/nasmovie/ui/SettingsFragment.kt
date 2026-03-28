@@ -63,10 +63,8 @@ class SettingsFragment : Fragment() {
 
     private fun initViews() {
         // 设置 Toolbar
-        binding.toolbar?.let { toolbar ->
-            toolbar.setTitle(R.string.settings)
-            toolbar.setShowBack(false)
-        }
+        binding.toolbar.setTitle(R.string.settings)
+        binding.toolbar.setShowBack(false)
 
         binding.itemServerManage.setOnClickListener {
             (activity as? MainActivity)?.openServerManage()
@@ -172,9 +170,9 @@ class SettingsFragment : Fragment() {
         binding.switchLock.isChecked = isLockEnabled
 
         if (isLockEnabled) {
-            binding.cardLockPassword?.visibility = View.VISIBLE
+            binding.cardLockPassword.visibility = View.VISIBLE
         } else {
-            binding.cardLockPassword?.visibility = View.GONE
+            binding.cardLockPassword.visibility = View.GONE
         }
     }
 

@@ -281,9 +281,7 @@ class MainActivity : AppCompatActivity() {
             currentFragment?.let {
                 transaction.hide(it)
             }
-            targetFragment?.let {
-                transaction.show(it)
-            }
+            transaction.show(targetFragment)
             transaction.commit()
             currentFragment = targetFragment
 

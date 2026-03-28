@@ -32,7 +32,7 @@ class ScanService(private val context: Context) {
 
     private val database: AppDatabase = NASMovieApp.getInstance().database
     private val smbConfigDao: SmbConfigDao = database.smbConfigDao()
-    private val repository = MovieRepository(context)
+    private val repository = MovieRepository()
 
     // 使用 CoroutineScope 管理后台任务
     private val scanJob = Job()
@@ -212,7 +212,6 @@ class ScanService(private val context: Context) {
             var videoPath: String? = null
             var videoName: String? = null
             var nfoPath: String? = null
-            var posterPath: String? = null
             var thumbPath: String? = null
             val subtitlePaths = mutableListOf<String>()
             var videoSize = 0L
@@ -266,7 +265,7 @@ class ScanService(private val context: Context) {
                 }
             }
 
-            posterPath = p1 ?: p2 ?: p3 ?: p4 ?: p5 ?: other
+            val posterPath = p1 ?: p2 ?: p3 ?: p4 ?: p5 ?: other
 
             var hasVideo = false
             if (videoPath != null) {
@@ -290,7 +289,7 @@ class ScanService(private val context: Context) {
     }
 
     private suspend fun createMovie(
-        folderPath: String, videoPath: String, videoName: String?,
+        folderPath: String, videoPath: String, @Suppress("UNUSED_PARAMETER") videoName: String?,
         videoSize: Long, nfoPath: String?, posterPath: String?, thumbPath: String?,
         subtitlePaths: List<String>
     ): Movie? {
@@ -315,7 +314,7 @@ class ScanService(private val context: Context) {
     }
 
     private suspend fun downloadAndCachePosters(movie: Movie, config: SmbConfig) {
-        val imageCache = NASMovieApp.getInstance().imageCache ?: return
+        val imageCache = NASMovieApp.getInstance().imageCache
 
         val poster = movie.posterPath
         if (!poster.isNullOrEmpty()) {

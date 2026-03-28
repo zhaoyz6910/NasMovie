@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = MovieRepository(application)
+    private val repository = MovieRepository()
 
     private val _allMovies = MutableLiveData<List<Movie>>()
     val allMovies: LiveData<List<Movie>> = _allMovies

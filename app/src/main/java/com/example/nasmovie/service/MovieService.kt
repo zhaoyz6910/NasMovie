@@ -16,7 +16,7 @@ import kotlinx.coroutines.withContext
  */
 class MovieService(private val context: Context) {
 
-    private val repository = MovieRepository(context)
+    private val repository = MovieRepository()
     private val smbConfigDao: SmbConfigDao = NASMovieApp.getInstance().database.smbConfigDao()
     private val scanService = ScanService(context)
 

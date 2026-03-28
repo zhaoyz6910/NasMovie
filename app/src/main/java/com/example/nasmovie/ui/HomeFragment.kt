@@ -81,7 +81,7 @@ class HomeFragment : Fragment(),
             if (!fragment.isAdded || fragment._binding == null) return
 
             val binding = fragment.binding
-            if (binding.viewPagerFeatured != null && fragment.featuredAdapter.itemCount > 0) {
+            if (fragment.featuredAdapter.itemCount > 0) {
                 val currentItem = binding.viewPagerFeatured.currentItem
                 binding.viewPagerFeatured.setCurrentItem(currentItem + 1, true)
                 fragment.autoSlideHandler.postDelayed(this, fragment.autoSlideInterval)
@@ -91,18 +91,16 @@ class HomeFragment : Fragment(),
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewModel = ViewModelProvider(this)[HomeViewModel::class.java]
-        initViews(view)
+        initViews()
         observeViewModel()
     }
 
-    private fun initViews(view: View) {
-        binding.toolbar?.let { toolbar ->
-            toolbar.setTitle(R.string.app_name)
-            toolbar.setShowBack(false)
-            (activity as? AppCompatActivity)?.let { activity ->
-                activity.setSupportActionBar(toolbar.toolbar)
-                activity.supportActionBar?.setDisplayShowTitleEnabled(false)
-            }
+    private fun initViews() {
+        binding.toolbar.setTitle(R.string.app_name)
+        binding.toolbar.setShowBack(false)
+        (activity as? AppCompatActivity)?.let { activity ->
+            activity.setSupportActionBar(binding.toolbar.toolbar)
+            activity.supportActionBar?.setDisplayShowTitleEnabled(false)
         }
 
         featuredAdapter = FeaturedMovieAdapter()
@@ -143,7 +141,7 @@ class HomeFragment : Fragment(),
 
         mainContentAdapter = MainContentAdapter()
         mainContentAdapter.setOnMovieClickListener(this)
-        mainContentAdapter.setRepository(MovieRepository(requireContext()))
+        mainContentAdapter.setRepository(MovieRepository())
 
         // 根据屏幕宽度计算列数，平板设备卡片宽度 240dp
         val metrics = resources.displayMetrics
@@ -345,7 +343,7 @@ class HomeFragment : Fragment(),
     }
 
     private fun updateViewPagerSize() {
-        if (_binding == null || binding.viewPagerFeatured == null || !isAdded) return
+        if (_binding == null || !isAdded) return
 
         val screenWidth = resources.displayMetrics.widthPixels
         val maxWidth = (600 * resources.displayMetrics.density).toInt()
@@ -368,7 +366,7 @@ class HomeFragment : Fragment(),
         }
 
         binding.viewPagerFeatured.post {
-            if (isAdded && _binding != null && binding.viewPagerFeatured != null) {
+            if (isAdded && _binding != null) {
                 binding.viewPagerFeatured.requestLayout()
                 binding.viewPagerFeatured.invalidate()
             }
@@ -376,7 +374,7 @@ class HomeFragment : Fragment(),
     }
 
     private fun updateGridSpanCount() {
-        if (_binding == null || binding.recyclerViewMain == null || !::mainContentAdapter.isInitialized || !isAdded) return
+        if (_binding == null || !::mainContentAdapter.isInitialized || !isAdded) return
 
         val metrics = resources.displayMetrics
         val screenWidth = metrics.widthPixels

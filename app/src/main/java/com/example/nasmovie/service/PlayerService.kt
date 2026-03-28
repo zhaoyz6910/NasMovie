@@ -10,7 +10,7 @@ import com.example.nasmovie.data.repository.MovieRepository
  */
 class PlayerService(private val context: Context) {
 
-    private val repository = MovieRepository(context)
+    private val repository = MovieRepository()
 
     /**
      * 获取电影信息

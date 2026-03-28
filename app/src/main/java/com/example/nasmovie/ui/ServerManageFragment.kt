@@ -62,8 +62,8 @@ class ServerManageFragment : Fragment(),
     private fun initViews() {
         // 设置 Toolbar
         activity?.let { activity ->
-            (activity as AppCompatActivity).setSupportActionBar(binding.toolbar.toolbar)
-            (activity as AppCompatActivity).supportActionBar?.setDisplayShowTitleEnabled(false)
+            (activity as? AppCompatActivity)?.setSupportActionBar(binding.toolbar.toolbar)
+            (activity as? AppCompatActivity)?.supportActionBar?.setDisplayShowTitleEnabled(false)
         }
 
         // 设置标题和返回按钮
