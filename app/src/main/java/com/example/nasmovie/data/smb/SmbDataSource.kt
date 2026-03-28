@@ -48,11 +48,13 @@ class SmbDataSource(private val config: SmbConfig) : BaseDataSource(true) {
             connect()
 
             // 解析路径
-            val filePath = parseFilePath(uri!!)
+            val currentUri = uri ?: throw IOException("URI is null")
+            val filePath = parseFilePath(currentUri)
             Log.d(TAG, "Opening file: $filePath")
 
             // 打开文件
-            smbFile = diskShare!!.openFile(
+            val share = diskShare ?: throw IOException("DiskShare not initialized")
+            smbFile = share.openFile(
                 filePath,
                 EnumSet.of(AccessMask.GENERIC_READ),
                 null,
@@ -62,16 +64,18 @@ class SmbDataSource(private val config: SmbConfig) : BaseDataSource(true) {
             )
 
             // 获取文件大小
-            val info = smbFile!!.getFileInformation(FileStandardInformation::class.java)
+            val file = smbFile ?: throw IOException("File not opened")
+            val info = file.getFileInformation(FileStandardInformation::class.java)
             val fileSize = info.endOfFile
 
             // 打开输入流
-            inputStream = smbFile!!.inputStream
+            inputStream = file.inputStream
 
             // 计算剩余字节
             if (dataSpec.position != C.LENGTH_UNSET.toLong()) {
                 // 跳转到指定位置
-                val skipped = inputStream!!.skip(dataSpec.position)
+                val stream = inputStream ?: throw IOException("InputStream not initialized")
+                val skipped = stream.skip(dataSpec.position)
                 bytesRemaining = fileSize - skipped
                 Log.d(TAG, "Seeked to position: $skipped, remaining: $bytesRemaining")
             } else {
@@ -99,8 +103,9 @@ class SmbDataSource(private val config: SmbConfig) : BaseDataSource(true) {
             return C.RESULT_END_OF_INPUT
         }
 
+        val stream = inputStream ?: throw IOException("InputStream not initialized")
         val bytesToRead = minOf(length.toLong(), bytesRemaining).toInt()
-        val bytesRead = inputStream!!.read(buffer, offset, bytesToRead)
+        val bytesRead = stream.read(buffer, offset, bytesToRead)
 
         if (bytesRead == -1) {
             return C.RESULT_END_OF_INPUT
@@ -127,9 +132,7 @@ class SmbDataSource(private val config: SmbConfig) : BaseDataSource(true) {
         val smbClient = SMBClient()
 
         connection = smbClient.connect(config.host, config.port)
-        if (connection == null) {
-            throw IOException("Failed to connect to server: ${config.host}")
-        }
+        val conn = connection ?: throw IOException("Failed to connect to server: ${config.host}")
 
         val ac: AuthenticationContext = if (config.isAnonymous) {
             AuthenticationContext.anonymous()
@@ -141,12 +144,10 @@ class SmbDataSource(private val config: SmbConfig) : BaseDataSource(true) {
             )
         }
 
-        session = connection!!.authenticate(ac)
-        if (session == null) {
-            throw IOException("Authentication failed")
-        }
+        session = conn.authenticate(ac)
+        val sess = session ?: throw IOException("Authentication failed")
 
-        diskShare = session!!.connectShare(config.shareName) as? com.hierynomus.smbj.share.DiskShare
+        diskShare = sess.connectShare(config.shareName) as? com.hierynomus.smbj.share.DiskShare
         if (diskShare == null) {
             throw IOException("Failed to connect to share: ${config.shareName}")
         }

@@ -1,6 +1,5 @@
 package com.example.nasmovie.service
 
-import android.content.Context
 import android.util.Log
 import com.example.nasmovie.NASMovieApp
 import com.example.nasmovie.data.db.AppDatabase
@@ -23,7 +22,7 @@ import java.util.Locale
  * 扫描服务 (Kotlin 协程重构版)
  * 负责扫描NAS上的电影资源
  */
-class ScanService(private val context: Context) {
+class ScanService {
 
     companion object {
         private const val TAG = "ScanService"
@@ -32,7 +31,7 @@ class ScanService(private val context: Context) {
 
     private val database: AppDatabase = NASMovieApp.getInstance().database
     private val smbConfigDao: SmbConfigDao = database.smbConfigDao()
-    private val repository = MovieRepository()
+    private val repository = MovieRepository
 
     // 使用 CoroutineScope 管理后台任务
     private val scanJob = Job()
@@ -142,18 +141,18 @@ class ScanService(private val context: Context) {
         var scannedCount = 0
         var addedCount = 0
 
-        currentClient = SmbClient()
+        val client = SmbClient().also { currentClient = it }
         try {
             withContext(Dispatchers.Main) { callback.onServerStart(config) }
             Log.i(TAG, "开始连接服务器")
 
-            if (!currentClient!!.connect(config)) {
+            if (!client.connect(config)) {
                 withContext(Dispatchers.Main) { callback.onError("无法连接服务器: ${config.name}") }
                 return 0
             }
 
             val moviePath = config.moviePath ?: ""
-            val items = currentClient!!.listFiles(moviePath)
+            val items = client.listFiles(moviePath)
             val folders = items.filter { it.isDirectory }
 
             val total = folders.size
@@ -183,7 +182,7 @@ class ScanService(private val context: Context) {
             }
 
             if (movies.isNotEmpty() && !isCancelRequested) {
-                repository.deleteMoviesByServer(config.id.toString())
+                repository.deleteMoviesByServer(config.id)
                 repository.saveMovies(movies)
             }
 
@@ -193,22 +192,23 @@ class ScanService(private val context: Context) {
             Log.e(TAG, "Scan internal error", e)
             return 0
         } finally {
-            currentClient?.disconnect()
+            client.disconnect()
             currentClient = null
         }
     }
 
     private suspend fun scanMovieFolder(folderPath: String): List<Movie> {
         val movies = mutableListOf<Movie>()
-        scanMovieFolderRecursive(folderPath, 0, movies)
+        val client = currentClient ?: return movies
+        scanMovieFolderRecursive(client, folderPath, 0, movies)
         return movies
     }
 
-    private suspend fun scanMovieFolderRecursive(folderPath: String, depth: Int, movies: MutableList<Movie>): Boolean {
+    private suspend fun scanMovieFolderRecursive(client: SmbClient, folderPath: String, depth: Int, movies: MutableList<Movie>): Boolean {
         if (depth > MAX_RECURSION_DEPTH || isCancelRequested) return false
 
         try {
-            val files = currentClient!!.listFiles(folderPath)
+            val files = client.listFiles(folderPath)
             var videoPath: String? = null
             var videoName: String? = null
             var nfoPath: String? = null
@@ -270,7 +270,7 @@ class ScanService(private val context: Context) {
             var hasVideo = false
             if (videoPath != null) {
                 hasVideo = true
-                val movie = createMovie(folderPath, videoPath, videoName, videoSize, nfoPath, posterPath, thumbPath, subtitlePaths)
+                val movie = createMovie(client, folderPath, videoPath, videoName, videoSize, nfoPath, posterPath, thumbPath, subtitlePaths)
                 if (movie != null) movies.add(movie)
             }
 
@@ -278,7 +278,7 @@ class ScanService(private val context: Context) {
                 for (subDir in subDirs) {
                     if (isCancelRequested) break
                     val subDirPath = subDir.path ?: continue
-                    scanMovieFolderRecursive(subDirPath, depth + 1, movies)
+                    scanMovieFolderRecursive(client, subDirPath, depth + 1, movies)
                 }
             }
             return hasVideo
@@ -289,18 +289,19 @@ class ScanService(private val context: Context) {
     }
 
     private suspend fun createMovie(
+        client: SmbClient,
         folderPath: String, videoPath: String, @Suppress("UNUSED_PARAMETER") videoName: String?,
         videoSize: Long, nfoPath: String?, posterPath: String?, thumbPath: String?,
         subtitlePaths: List<String>
     ): Movie? {
-        val config = currentClient?.config ?: return null
+        val config = client.config ?: return null
 
         val movie = Movie().apply {
             id = FileUtils.generateMovieId(videoPath)
             this.videoPath = videoPath
             fileSize = videoSize
             this.folderPath = folderPath
-            serverId = config.id.toString()
+            serverId = config.id  // 现在直接使用 Long 类型
             this.nfoPath = nfoPath
             this.posterPath = posterPath ?: thumbPath
             this.thumbPath = thumbPath ?: posterPath
@@ -308,7 +309,7 @@ class ScanService(private val context: Context) {
             title = getFolderName(folderPath)
         }
 
-        if (nfoPath != null) parseNfo(movie, nfoPath)
+        if (nfoPath != null) parseNfo(client, movie, nfoPath)
         downloadAndCachePosters(movie, config)
         return movie
     }
@@ -333,9 +334,9 @@ class ScanService(private val context: Context) {
         }
     }
 
-    private suspend fun parseNfo(movie: Movie, nfoPath: String) {
+    private suspend fun parseNfo(client: SmbClient, movie: Movie, nfoPath: String) {
         try {
-            val data = currentClient?.readFileBytes(nfoPath) ?: return
+            val data = client.readFileBytes(nfoPath) ?: return
             val metadata = NfoParser.parse(data) ?: return
 
             if (metadata.title != null) movie.title = metadata.title

@@ -39,4 +39,10 @@ interface FavoriteDao {
 
     @Query("SELECT COUNT(*) FROM favorite")
     suspend fun getCount(): Int
+
+    @Query("DELETE FROM favorite WHERE movieId IN (:movieIds)")
+    suspend fun deleteByMovieIds(movieIds: List<String>)
+
+    @Query("DELETE FROM favorite WHERE movieId IN (SELECT id FROM movie WHERE serverId = :serverId)")
+    suspend fun deleteByServerId(serverId: Long)
 }

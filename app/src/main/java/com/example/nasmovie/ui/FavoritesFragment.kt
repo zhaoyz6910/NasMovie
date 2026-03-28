@@ -29,6 +29,7 @@ class FavoritesFragment : Fragment(),
 
     private lateinit var adapter: FavoriteAdapter
     private lateinit var viewModel: FavoritesViewModel
+    private var searchTextWatcher: TextWatcher? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,6 +41,9 @@ class FavoritesFragment : Fragment(),
     }
 
     override fun onDestroyView() {
+        // 移除 TextWatcher 防止内存泄漏
+        searchTextWatcher?.let { binding.etSearch.removeTextChangedListener(it) }
+        searchTextWatcher = null
         super.onDestroyView()
         _binding = null
     }
@@ -80,13 +84,14 @@ class FavoritesFragment : Fragment(),
 
         binding.btnDelete.setOnClickListener { deleteSelected() }
 
-        binding.etSearch.addTextChangedListener(object : TextWatcher {
+        searchTextWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 viewModel.filterFavorites(s.toString())
             }
             override fun afterTextChanged(s: Editable?) {}
-        })
+        }
+        binding.etSearch.addTextChangedListener(searchTextWatcher)
     }
 
     private fun observeViewModel() {

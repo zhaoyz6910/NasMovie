@@ -1,6 +1,7 @@
 package com.example.nasmovie.data.model
 
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -11,7 +12,16 @@ import java.util.Locale
  */
 @Entity(
     tableName = "watch_progress",
-    indices = [Index("updateTime")]
+    indices = [Index("updateTime"), Index("movieId")],
+    foreignKeys = [
+        ForeignKey(
+            entity = Movie::class,
+            parentColumns = ["id"],
+            childColumns = ["movieId"],
+            onDelete = ForeignKey.CASCADE,
+            onUpdate = ForeignKey.CASCADE
+        )
+    ]
 )
 data class WatchProgress(
     @PrimaryKey

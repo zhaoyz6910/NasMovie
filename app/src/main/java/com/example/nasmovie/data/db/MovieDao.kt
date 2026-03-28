@@ -30,7 +30,7 @@ interface MovieDao {
     suspend fun deleteById(id: String)
 
     @Query("DELETE FROM movie WHERE serverId = :serverId")
-    suspend fun deleteByServerId(serverId: String)
+    suspend fun deleteByServerId(serverId: Long)
 
     @Query("DELETE FROM movie")
     suspend fun deleteAll()
@@ -45,7 +45,7 @@ interface MovieDao {
     suspend fun getAllByAddTime(): List<Movie>
 
     @Query("SELECT * FROM movie WHERE serverId = :serverId ORDER BY title ASC")
-    suspend fun getByServerId(serverId: String): List<Movie>
+    suspend fun getByServerId(serverId: Long): List<Movie>
 
     @Query("SELECT * FROM movie WHERE LOWER(title) LIKE '%' || LOWER(:keyword) || '%' OR LOWER(originalTitle) LIKE '%' || LOWER(:keyword) || '%' OR LOWER(actors) LIKE '%' || LOWER(:keyword) || '%'")
     suspend fun search(keyword: String): List<Movie>
@@ -57,7 +57,7 @@ interface MovieDao {
     suspend fun getCount(): Int
 
     @Query("SELECT COUNT(*) FROM movie WHERE serverId = :serverId")
-    suspend fun getCountByServerId(serverId: String): Int
+    suspend fun getCountByServerId(serverId: Long): Int
 
     // ========== 排序查询 ==========
 

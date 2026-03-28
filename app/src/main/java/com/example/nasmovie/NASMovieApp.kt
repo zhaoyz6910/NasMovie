@@ -9,9 +9,9 @@ import android.os.Looper
 import androidx.appcompat.app.AppCompatDelegate
 import com.example.nasmovie.data.db.AppDatabase
 import com.example.nasmovie.data.smb.SmbImageCache
-import com.example.nasmovie.ui.ExoPlayerActivity
 import com.example.nasmovie.ui.LockActivity
 import com.example.nasmovie.util.PreferenceManager
+import com.example.nasmovie.util.SmbImageLoader
 import java.lang.ref.WeakReference
 
 /**
@@ -23,7 +23,7 @@ class NASMovieApp : Application(), Application.ActivityLifecycleCallbacks {
         private var instance: NASMovieApp? = null
 
         fun getInstance(): NASMovieApp {
-            return instance!!
+            return instance ?: throw IllegalStateException("NASMovieApp 未初始化，请确保在 AndroidManifest.xml 中正确配置")
         }
 
         // 最小后台时间（毫秒），超过此时间返回需要显示锁屏
@@ -175,5 +175,7 @@ class NASMovieApp : Application(), Application.ActivityLifecycleCallbacks {
         if (::_imageCache.isInitialized) {
             _imageCache.release()
         }
+        // 释放图片加载器协程资源
+        SmbImageLoader.release()
     }
 }

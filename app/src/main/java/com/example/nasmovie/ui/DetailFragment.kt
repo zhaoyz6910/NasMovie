@@ -11,6 +11,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.example.nasmovie.R
@@ -20,6 +21,9 @@ import com.example.nasmovie.databinding.FragmentDetailBinding
 import com.example.nasmovie.util.FileUtils
 import com.example.nasmovie.util.StringUtils
 import com.example.nasmovie.util.SmbImageLoader
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.Locale
 
@@ -185,21 +189,45 @@ class DetailFragment : Fragment() {
             binding.tvPlot.setText(R.string.movie_no_plot)
         }
 
-        // 加载海报
-        val localThumb = movie.localThumbPath
-        val localPoster = movie.localPosterPath
-        val thumbExists = !localThumb.isNullOrEmpty() && File(localThumb).exists()
-        val posterExists = !localPoster.isNullOrEmpty() && File(localPoster).exists()
+        // 加载海报 - 文件存在检查移至后台线程
+        loadPoster(movie)
+    }
 
-        // 横屏模式使用 poster，竖屏模式使用 thumb/detailPoster
+    private fun loadPoster(movie: Movie) {
+        lifecycleScope.launch {
+            val localThumb = movie.localThumbPath
+            val localPoster = movie.localPosterPath
+
+            // 在后台线程检查文件存在
+            val thumbExists = withContext(Dispatchers.IO) {
+                !localThumb.isNullOrEmpty() && File(localThumb).exists()
+            }
+            val posterExists = withContext(Dispatchers.IO) {
+                !localPoster.isNullOrEmpty() && File(localPoster).exists()
+            }
+
+            // 回到主线程更新 UI
+            withContext(Dispatchers.Main) {
+                displayPosterImage(movie, thumbExists, posterExists, localThumb, localPoster)
+            }
+        }
+    }
+
+    private fun displayPosterImage(
+        movie: Movie,
+        thumbExists: Boolean,
+        posterExists: Boolean,
+        localThumb: String?,
+        localPoster: String?
+    ) {
         val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val glideRequest = Glide.with(requireContext())
 
         if (isLandscape) {
             // 横屏：优先使用 poster
             when {
                 posterExists -> {
-                    Glide.with(requireContext())
-                        .load(File(localPoster!!))
+                    glideRequest.load(File(localPoster!!))
                         .placeholder(R.drawable.bg_poster_placeholder)
                         .error(R.drawable.bg_poster_placeholder)
                         .transition(DrawableTransitionOptions.withCrossFade(300))
@@ -209,8 +237,7 @@ class DetailFragment : Fragment() {
                     SmbImageLoader.loadPoster(requireContext(), movie, binding.ivPoster)
                 }
                 thumbExists -> {
-                    Glide.with(requireContext())
-                        .load(File(localThumb!!))
+                    glideRequest.load(File(localThumb!!))
                         .placeholder(R.drawable.bg_poster_placeholder)
                         .error(R.drawable.bg_poster_placeholder)
                         .transition(DrawableTransitionOptions.withCrossFade(300))
@@ -220,8 +247,7 @@ class DetailFragment : Fragment() {
                     SmbImageLoader.loadDetailPoster(requireContext(), movie, binding.ivPoster)
                 }
                 else -> {
-                    Glide.with(requireContext())
-                        .load(R.drawable.bg_poster_placeholder)
+                    glideRequest.load(R.drawable.bg_poster_placeholder)
                         .transition(DrawableTransitionOptions.withCrossFade(300))
                         .into(binding.ivPoster)
                 }
@@ -230,8 +256,7 @@ class DetailFragment : Fragment() {
             // 竖屏：优先使用 thumb/detailPoster
             when {
                 thumbExists -> {
-                    Glide.with(requireContext())
-                        .load(File(localThumb!!))
+                    glideRequest.load(File(localThumb!!))
                         .placeholder(R.drawable.bg_poster_placeholder)
                         .error(R.drawable.bg_poster_placeholder)
                         .transition(DrawableTransitionOptions.withCrossFade(300))
@@ -241,8 +266,7 @@ class DetailFragment : Fragment() {
                     SmbImageLoader.loadDetailPoster(requireContext(), movie, binding.ivPoster)
                 }
                 posterExists -> {
-                    Glide.with(requireContext())
-                        .load(File(localPoster!!))
+                    glideRequest.load(File(localPoster!!))
                         .placeholder(R.drawable.bg_poster_placeholder)
                         .error(R.drawable.bg_poster_placeholder)
                         .transition(DrawableTransitionOptions.withCrossFade(300))
@@ -252,8 +276,7 @@ class DetailFragment : Fragment() {
                     SmbImageLoader.loadPoster(requireContext(), movie, binding.ivPoster)
                 }
                 else -> {
-                    Glide.with(requireContext())
-                        .load(R.drawable.bg_poster_placeholder)
+                    glideRequest.load(R.drawable.bg_poster_placeholder)
                         .transition(DrawableTransitionOptions.withCrossFade(300))
                         .into(binding.ivPoster)
                 }

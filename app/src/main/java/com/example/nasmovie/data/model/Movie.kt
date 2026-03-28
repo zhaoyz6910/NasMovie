@@ -43,7 +43,7 @@ data class Movie(
     var fileSize: Long = 0,
     var duration: Int = 0,
     var addTime: Long = System.currentTimeMillis(),
-    var serverId: String? = null,
+    var serverId: Long? = null,  // 改为 Long 类型，与 SmbConfig.id 保持一致
     var folderPath: String? = null
 ) {
     @Ignore

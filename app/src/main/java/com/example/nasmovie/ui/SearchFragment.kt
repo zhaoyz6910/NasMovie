@@ -27,6 +27,7 @@ class SearchFragment : Fragment(), SearchResultAdapter.OnMovieClickListener {
 
     private lateinit var resultAdapter: SearchResultAdapter
     private lateinit var viewModel: SearchViewModel
+    private var searchTextWatcher: TextWatcher? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,6 +39,9 @@ class SearchFragment : Fragment(), SearchResultAdapter.OnMovieClickListener {
     }
 
     override fun onDestroyView() {
+        // 移除 TextWatcher 防止内存泄漏
+        searchTextWatcher?.let { binding.editSearch.removeTextChangedListener(it) }
+        searchTextWatcher = null
         super.onDestroyView()
         _binding = null
     }
@@ -71,13 +75,14 @@ class SearchFragment : Fragment(), SearchResultAdapter.OnMovieClickListener {
         binding.recyclerViewResults.adapter = resultAdapter
 
         // 搜索输入监听
-        binding.editSearch.addTextChangedListener(object : TextWatcher {
+        searchTextWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 binding.btnClear.visibility = if (s?.isNotEmpty() == true) View.VISIBLE else View.GONE
             }
             override fun afterTextChanged(s: Editable?) {}
-        })
+        }
+        binding.editSearch.addTextChangedListener(searchTextWatcher)
 
         // 搜索按钮监听
         binding.editSearch.setOnEditorActionListener { _, actionId, _ ->

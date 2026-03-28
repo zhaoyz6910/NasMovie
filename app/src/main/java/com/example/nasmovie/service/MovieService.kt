@@ -1,6 +1,5 @@
 package com.example.nasmovie.service
 
-import android.content.Context
 import com.example.nasmovie.NASMovieApp
 import com.example.nasmovie.data.db.SmbConfigDao
 import com.example.nasmovie.data.model.Movie
@@ -14,11 +13,11 @@ import kotlinx.coroutines.withContext
 /**
  * 电影业务服务 (Kotlin 重构版)
  */
-class MovieService(private val context: Context) {
+class MovieService {
 
-    private val repository = MovieRepository()
+    private val repository = MovieRepository
     private val smbConfigDao: SmbConfigDao = NASMovieApp.getInstance().database.smbConfigDao()
-    private val scanService = ScanService(context)
+    private val scanService = ScanService()
 
     // ==================== 服务器管理 ====================
 

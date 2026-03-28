@@ -90,7 +90,7 @@ class ServerManageFragment : Fragment(),
 
     private fun initData() {
         smbConfigDao = NASMovieApp.getInstance().database.smbConfigDao()
-        scanService = ScanService(requireContext())
+        scanService = ScanService()
     }
 
     private fun loadServers() {
@@ -156,10 +156,33 @@ class ServerManageFragment : Fragment(),
             .addItem("取消", null)
             .addDestructiveItem("删除") {
                 lifecycleScope.launch {
-                    withContext(Dispatchers.IO) {
-                        smbConfigDao.delete(config)
+                    val success = withContext(Dispatchers.IO) {
+                        try {
+                            val database = NASMovieApp.getInstance().database
+                            val serverId = config.id  // 现在直接使用 Long 类型，无需转换
+
+                            // 1. 使用批量删除：删除观看进度和收藏
+                            database.watchProgressDao().deleteByServerId(serverId)
+                            database.favoriteDao().deleteByServerId(serverId)
+
+                            // 2. 删除该服务器的所有影视资源
+                            database.movieDao().deleteByServerId(serverId)
+
+                            // 3. 删除服务器配置
+                            smbConfigDao.delete(config)
+                            true
+                        } catch (e: Exception) {
+                            android.util.Log.e("ServerManageFragment", "删除服务器失败", e)
+                            false
+                        }
                     }
-                    loadServers()
+
+                    if (success && isAdded) {
+                        loadServers()
+                        Toast.makeText(context, "服务器已删除", Toast.LENGTH_SHORT).show()
+                    } else if (isAdded) {
+                        Toast.makeText(context, "删除失败，请稍后重试", Toast.LENGTH_LONG).show()
+                    }
                 }
             }
             .build()

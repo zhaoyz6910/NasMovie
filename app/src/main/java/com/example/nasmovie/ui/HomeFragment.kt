@@ -53,6 +53,8 @@ class HomeFragment : Fragment(),
     }
 
     override fun onDestroyView() {
+        // 停止自动轮播，清理 Handler callbacks
+        stopAutoSlide()
         super.onDestroyView()
         _binding = null
     }
@@ -141,7 +143,6 @@ class HomeFragment : Fragment(),
 
         mainContentAdapter = MainContentAdapter()
         mainContentAdapter.setOnMovieClickListener(this)
-        mainContentAdapter.setRepository(MovieRepository())
 
         // 根据屏幕宽度计算列数，平板设备卡片宽度 240dp
         val metrics = resources.displayMetrics

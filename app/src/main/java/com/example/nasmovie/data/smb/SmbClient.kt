@@ -63,7 +63,7 @@ class SmbClient : AutoCloseable {
         try {
             // 创建连接
             connection = smbClient.connect(config.host, config.port)
-            if (connection == null) {
+            val conn = connection ?: run {
                 Log.e(TAG, "Failed to connect to server")
                 return@withContext false
             }
@@ -80,14 +80,14 @@ class SmbClient : AutoCloseable {
             }
 
             // 创建会话
-            session = connection!!.authenticate(ac)
-            if (session == null) {
+            session = conn.authenticate(ac)
+            val sess = session ?: run {
                 Log.e(TAG, "Authentication failed")
                 return@withContext false
             }
 
             // 连接到共享文件夹
-            diskShare = session!!.connectShare(config.shareName) as? DiskShare
+            diskShare = sess.connectShare(config.shareName) as? DiskShare
             if (diskShare == null) {
                 Log.e(TAG, "Failed to connect to share")
                 return@withContext false
@@ -178,7 +178,8 @@ class SmbClient : AutoCloseable {
         }
 
         try {
-            val fileInfos = diskShare!!.list(path)
+            val share = diskShare ?: return@withContext files
+            val fileInfos = share.list(path)
             for (info in fileInfos) {
                 val fileName = info.fileName
                 // 跳过.和..
@@ -202,7 +203,37 @@ class SmbClient : AutoCloseable {
     }
 
     /**
+     * 使用文件的输入流（自动管理资源）
+     * 推荐使用此方法而非 readFile()，确保资源正确释放
+     */
+    suspend fun <T> useFile(path: String, block: (InputStream) -> T): T? = withContext(Dispatchers.IO) {
+        if (!isConnected) {
+            Log.e(TAG, "Not connected to server")
+            return@withContext null
+        }
+
+        try {
+            val share = diskShare ?: return@withContext null
+            share.openFile(
+                path,
+                EnumSet.of(AccessMask.GENERIC_READ),
+                null,
+                EnumSet.of(SMB2ShareAccess.FILE_SHARE_READ),
+                SMB2CreateDisposition.FILE_OPEN,
+                EnumSet.of(SMB2CreateOptions.FILE_NON_DIRECTORY_FILE)
+            ).use { file ->
+                block(file.inputStream)
+            }
+        } catch (e: SMBApiException) {
+            Log.e(TAG, "Error opening file: ${e.message}")
+            null
+        }
+    }
+
+    /**
      * 读取文件输入流
+     * 注意：调用者必须关闭返回的 InputStream，否则会导致资源泄漏
+     * 建议使用 useFile() 方法代替
      */
     suspend fun readFile(path: String): InputStream? = withContext(Dispatchers.IO) {
         if (!isConnected) {
@@ -211,7 +242,8 @@ class SmbClient : AutoCloseable {
         }
 
         try {
-            val file = diskShare!!.openFile(
+            val share = diskShare ?: return@withContext null
+            val file = share.openFile(
                 path,
                 EnumSet.of(AccessMask.GENERIC_READ),
                 null,
@@ -233,7 +265,8 @@ class SmbClient : AutoCloseable {
         if (!isConnected) return@withContext null
 
         try {
-            diskShare!!.openFile(
+            val share = diskShare ?: return@withContext null
+            share.openFile(
                 path,
                 EnumSet.of(AccessMask.GENERIC_READ),
                 null,
@@ -243,7 +276,7 @@ class SmbClient : AutoCloseable {
             ).use { file ->
                 val info = file.getFileInformation(FileStandardInformation::class.java)
                 val fileSize = info.endOfFile
-                
+
                 file.inputStream.use { isStream ->
                     val buffer = ByteArray(fileSize.toInt())
                     var bytesRead = 0

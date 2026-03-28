@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = MovieRepository()
+    private val repository = MovieRepository
 
     private val _allMovies = MutableLiveData<List<Movie>>()
     val allMovies: LiveData<List<Movie>> = _allMovies
@@ -71,16 +71,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private suspend fun getRecentWatchedMovies(limit: Int): List<Movie> {
-        val recentProgress = repository.getRecentWatchProgress(limit)
-        val result = mutableListOf<Movie>()
-        for (progress in recentProgress) {
-            val movie = repository.getMovieById(progress.movieId)
-            if (movie != null) {
-                movie.progress = progress.percentage
-                result.add(movie)
-            }
-        }
-        return result
+        // 使用优化的 JOIN 查询方法，避免 N+1 问题
+        return repository.getRecentWatchedMovies(limit)
     }
 
     private fun getHighRatedMovies(movies: List<Movie>?, limit: Int): List<Movie> {
@@ -97,6 +89,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     override fun onCleared() {
         super.onCleared()
-        repository.close()
+        // Repository 现在是单例，无需关闭
     }
 }

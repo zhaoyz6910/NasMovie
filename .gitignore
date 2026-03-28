@@ -50,5 +50,6 @@ keystore.properties
 
 # Project-specific
 app/build/
+app/schemas/
 .claude/
 .qoder/

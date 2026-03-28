@@ -60,11 +60,12 @@ class SubtitleManager(private val context: Context) {
                 data = readLocalFile(path)
             } else {
                 // SMB文件
-                if (fileReader == null) {
+                val reader = fileReader
+                if (reader == null) {
                     Log.e(TAG, "SMB file reader not initialized")
                     return false
                 }
-                data = fileReader!!.readAllBytes(path)
+                data = reader.readAllBytes(path)
             }
 
             if (data == null) {
@@ -129,12 +130,13 @@ class SubtitleManager(private val context: Context) {
         if (index != currentEntryIndex) {
             currentEntryIndex = index
 
+            val view = subtitleView
             if (index >= 0) {
                 val entry = entries[index]
-                subtitleView!!.text = entry.text
-                subtitleView!!.visibility = View.VISIBLE
+                view?.text = entry.text
+                view?.visibility = View.VISIBLE
             } else {
-                subtitleView!!.visibility = View.GONE
+                view?.visibility = View.GONE
             }
         }
     }

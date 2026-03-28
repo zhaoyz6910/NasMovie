@@ -12,7 +12,7 @@ import java.util.Locale
 
 class FavoritesViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = MovieRepository()
+    private val repository = MovieRepository
 
     private val _allFavorites = MutableLiveData<List<Movie>>()
     
@@ -57,6 +57,6 @@ class FavoritesViewModel(application: Application) : AndroidViewModel(applicatio
 
     override fun onCleared() {
         super.onCleared()
-        repository.close()
+        // Repository 现在是单例，无需关闭
     }
 }

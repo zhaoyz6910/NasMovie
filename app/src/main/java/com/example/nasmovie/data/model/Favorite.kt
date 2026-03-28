@@ -1,6 +1,7 @@
 package com.example.nasmovie.data.model
 
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -10,7 +11,16 @@ import androidx.room.PrimaryKey
  */
 @Entity(
     tableName = "favorite",
-    indices = [Index("addTime")]
+    indices = [Index("addTime"), Index("movieId")],
+    foreignKeys = [
+        ForeignKey(
+            entity = Movie::class,
+            parentColumns = ["id"],
+            childColumns = ["movieId"],
+            onDelete = ForeignKey.CASCADE,
+            onUpdate = ForeignKey.CASCADE
+        )
+    ]
 )
 data class Favorite(
     @PrimaryKey

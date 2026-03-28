@@ -107,8 +107,9 @@ object AppConstants {
 
     /**
      * 数据库版本
+     * 注意：此值必须与 AppDatabase 中的 version 保持一致
      */
-    const val DATABASE_VERSION = 6
+    const val DATABASE_VERSION = 8
 
     // ==================== 视频文件扩展名 ====================
 

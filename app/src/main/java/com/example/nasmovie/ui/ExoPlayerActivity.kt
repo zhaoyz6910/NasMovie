@@ -23,6 +23,7 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.OptIn
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -40,9 +41,7 @@ import com.example.nasmovie.data.smb.SmbClient
 import com.example.nasmovie.data.smb.SmbDataSource
 import com.example.nasmovie.player.PlayerGestureHandler
 import com.example.nasmovie.player.SubtitleManager
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -83,8 +82,6 @@ class ExoPlayerActivity : AppCompatActivity(), PlayerGestureHandler.GestureCallb
     private var isControlsVisible = true
     private var isFullscreen = false
 
-    private val job = Job()
-    private val scope = CoroutineScope(Dispatchers.Main + job)
     private val mainHandler = Handler(Looper.getMainLooper())
 
     private val hideControlsRunnable = Runnable { hideControls() }
@@ -211,7 +208,7 @@ class ExoPlayerActivity : AppCompatActivity(), PlayerGestureHandler.GestureCallb
     }
 
     private fun initData() {
-        repository = MovieRepository()
+        repository = MovieRepository
         subtitleManager = SubtitleManager(this)
         subtitleManager.setSubtitleView(tvSubtitle)
     }
@@ -261,7 +258,7 @@ class ExoPlayerActivity : AppCompatActivity(), PlayerGestureHandler.GestureCallb
         val id = movieId ?: return
         loadingView.visibility = View.VISIBLE
 
-        scope.launch {
+        lifecycleScope.launch {
             try {
                 movie = repository.getMovieById(id)
                 if (movie != null) {
@@ -284,11 +281,11 @@ class ExoPlayerActivity : AppCompatActivity(), PlayerGestureHandler.GestureCallb
     private fun playMovie() {
         val currentMovie = movie ?: return
 
-        scope.launch(Dispatchers.IO) {
+        lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val serverId = currentMovie.serverId?.toLongOrNull() ?: return@launch
+                val serverId = currentMovie.serverId ?: return@launch
                 val config = NASMovieApp.getInstance().database.smbConfigDao().getById(serverId)
-                
+
                 if (config == null) {
                     withContext(Dispatchers.Main) { loadingView.visibility = View.GONE }
                     return@launch
@@ -475,7 +472,7 @@ class ExoPlayerActivity : AppCompatActivity(), PlayerGestureHandler.GestureCallb
         val duration = p.duration
 
         if (position > 0 && duration > 0 && duration != C.TIME_UNSET) {
-            scope.launch {
+            lifecycleScope.launch {
                 try {
                     repository.saveWatchProgress(currentMovie.id, position, duration)
                     if (currentMovie.duration <= 0) {
@@ -605,11 +602,12 @@ class ExoPlayerActivity : AppCompatActivity(), PlayerGestureHandler.GestureCallb
 
     override fun onDestroy() {
         super.onDestroy()
-        job.cancel() // 取消所有协程
+        // lifecycleScope 会自动取消所有协程
         stopProgressUpdate()
         mainHandler.removeCallbacksAndMessages(null)
         player?.release()
         player = null
-        repository.close()
+        subtitleManager.clear()
+        // Repository 现在是单例，无需关闭
     }
 }

@@ -1,13 +1,20 @@
 package com.example.nasmovie.data.model
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.example.nasmovie.util.AppConstants
 
 /**
  * SMB服务器配置实体
  */
-@Entity(tableName = "smb_config")
+@Entity(
+    tableName = "smb_config",
+    indices = [
+        Index("isDefault"),
+        Index(value = ["name"], unique = true)
+    ]
+)
 data class SmbConfig(
     @PrimaryKey(autoGenerate = true)
     var id: Long = 0,

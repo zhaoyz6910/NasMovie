@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 
 class SearchViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = MovieRepository()
+    private val repository = MovieRepository
     private val historyManager = SearchHistoryManager(application)
 
     private val _searchResults = MutableLiveData<List<Movie>?>()
@@ -61,6 +61,6 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
 
     override fun onCleared() {
         super.onCleared()
-        repository.close()
+        // Repository 现在是单例，无需关闭
     }
 }

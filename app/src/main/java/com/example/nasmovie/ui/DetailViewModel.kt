@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 
 class DetailViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = MovieRepository()
+    private val repository = MovieRepository
     private var currentMovieId: String? = null
 
     private val _movie = MutableLiveData<Movie?>()
@@ -79,6 +79,6 @@ class DetailViewModel(application: Application) : AndroidViewModel(application) 
 
     override fun onCleared() {
         super.onCleared()
-        repository.close()
+        // Repository 现在是单例，无需关闭
     }
 }

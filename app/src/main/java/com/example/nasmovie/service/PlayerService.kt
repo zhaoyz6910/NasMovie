@@ -1,6 +1,5 @@
 package com.example.nasmovie.service
 
-import android.content.Context
 import com.example.nasmovie.data.model.Movie
 import com.example.nasmovie.data.model.WatchProgress
 import com.example.nasmovie.data.repository.MovieRepository
@@ -8,9 +7,9 @@ import com.example.nasmovie.data.repository.MovieRepository
 /**
  * 播放业务服务 (Kotlin 重构版)
  */
-class PlayerService(private val context: Context) {
+class PlayerService {
 
-    private val repository = MovieRepository()
+    private val repository = MovieRepository
 
     /**
      * 获取电影信息

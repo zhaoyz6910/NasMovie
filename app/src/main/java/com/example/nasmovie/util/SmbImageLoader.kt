@@ -3,8 +3,12 @@ package com.example.nasmovie.util
 import android.content.Context
 import android.util.Log
 import android.widget.ImageView
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import com.bumptech.glide.request.RequestOptions
 import com.example.nasmovie.NASMovieApp
 import com.example.nasmovie.R
 import com.example.nasmovie.data.model.Movie
@@ -12,9 +16,11 @@ import com.example.nasmovie.data.model.SmbConfig
 import com.example.nasmovie.data.smb.SmbImageCache
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
+import java.lang.ref.WeakReference
+import kotlin.concurrent.Volatile
 
 /**
  * SMB 图片加载器
@@ -23,7 +29,12 @@ import java.io.File
 object SmbImageLoader {
 
     private const val TAG = "SmbImageLoader"
+
+    @Volatile
     private var imageCache: SmbImageCache? = null
+
+    // 使用 SupervisorJob 管理协程，子协程失败不会影响其他协程
+    private val imageLoadScope = CoroutineScope(Dispatchers.IO + Job())
 
     /**
      * 初始化（在 Application 中调用）
@@ -43,7 +54,16 @@ object SmbImageLoader {
         if (imageCache == null) {
             imageCache = NASMovieApp.getInstance().imageCache
         }
-        return imageCache!!
+        return imageCache ?: throw IllegalStateException("SmbImageCache not initialized. Call init() first.")
+    }
+
+    /**
+     * 释放资源（在 Application 销毁时调用）
+     */
+    @JvmStatic
+    fun release() {
+        imageLoadScope.coroutineContext[Job]?.cancel()
+        imageCache = null
     }
 
     /**
@@ -64,16 +84,9 @@ object SmbImageLoader {
             imageCache = NASMovieApp.getInstance().imageCache
         }
 
-        Log.d(TAG, "Loading poster for: ${movie.title}")
-        Log.d(TAG, "  posterPath: ${movie.posterPath}")
-        Log.d(TAG, "  thumbPath: ${movie.thumbPath}")
-        Log.d(TAG, "  localPosterPath: ${movie.localPosterPath}")
-        Log.d(TAG, "  localThumbPath: ${movie.localThumbPath}")
-
         // 首页优先使用 localPosterPath（对应 poster.jpg）
         val localPath = movie.localPosterPath
         if (!localPath.isNullOrEmpty() && File(localPath).exists()) {
-            Log.d(TAG, "  Loading from localPosterPath: $localPath")
             Glide.with(context)
                 .load(File(localPath))
                 .placeholder(R.drawable.bg_poster_placeholder)
@@ -86,8 +99,6 @@ object SmbImageLoader {
         // 其次使用 SMB posterPath
         val posterPath = movie.posterPath
         val serverId = movie.serverId
-
-        Log.d(TAG, "  Loading from SMB posterPath: $posterPath")
 
         if (posterPath.isNullOrEmpty()) {
             loadPlaceholder(context, imageView)
@@ -145,9 +156,10 @@ object SmbImageLoader {
      * @param posterPath SMB海报路径
      * @param serverId 服务器ID
      * @param imageView 目标 ImageView
+     * @param lifecycleOwner 可选的生命周期所有者，用于协程管理
      */
     @JvmStatic
-    fun loadPoster(context: Context, posterPath: String?, serverId: String?, imageView: ImageView) {
+    fun loadPoster(context: Context, posterPath: String?, serverId: Long?, imageView: ImageView, lifecycleOwner: LifecycleOwner? = null) {
         if (posterPath.isNullOrEmpty()) {
             loadPlaceholder(context, imageView)
             return
@@ -173,7 +185,7 @@ object SmbImageLoader {
         loadPlaceholder(context, imageView)
 
         // 获取服务器配置并下载
-        downloadAndLoad(context, posterPath, serverId, imageView)
+        downloadAndLoad(context, posterPath, serverId, imageView, lifecycleOwner)
     }
 
     /**
@@ -187,21 +199,37 @@ object SmbImageLoader {
 
     /**
      * 下载并加载图片
+     * @param lifecycleOwner 可选的生命周期所有者，用于协程管理
      */
-    private fun downloadAndLoad(@Suppress("UNUSED_PARAMETER") context: Context, posterPath: String, serverId: String?, imageView: ImageView) {
-        CoroutineScope(Dispatchers.IO).launch {
+    private fun downloadAndLoad(
+        @Suppress("UNUSED_PARAMETER") context: Context,
+        posterPath: String,
+        serverId: Long?,
+        imageView: ImageView,
+        lifecycleOwner: LifecycleOwner?
+    ) {
+        // 使用弱引用避免内存泄漏
+        val imageViewRef = WeakReference(imageView)
+        val imageViewContext = imageView.context
+
+        // 检查 ImageView 是否有效
+        val isValid: () -> Boolean = {
+            val view = imageViewRef.get()
+            view != null && view.context == imageViewContext && view.isAttachedToWindow
+        }
+
+        // 优先使用生命周期绑定的作用域，否则使用全局作用域
+        val scope = lifecycleOwner?.lifecycleScope ?: imageLoadScope
+
+        scope.launch(Dispatchers.IO) {
             try {
                 // 从数据库获取服务器配置
                 val database = NASMovieApp.getInstance().database
                 val dao = database.smbConfigDao()
 
                 var config: SmbConfig? = null
-                if (!serverId.isNullOrEmpty()) {
-                    try {
-                        config = dao.getById(serverId.toLong())
-                    } catch (e: NumberFormatException) {
-                        // serverId 不是数字，忽略
-                    }
+                if (serverId != null) {
+                    config = dao.getById(serverId)
                 }
 
                 if (config == null) {
@@ -220,14 +248,20 @@ object SmbImageLoader {
                 // 异步下载图片
                 imageCache?.downloadImageAsync(posterPath, config, object : SmbImageCache.DownloadCallback {
                     override fun onSuccess(localPath: String) {
-                        // 下载成功，使用 post 确保在 UI 线程且 ImageView 未被回收时加载
-                        imageView.post {
-                            Glide.with(imageView.context)
-                                .load(File(localPath))
-                                .placeholder(R.drawable.bg_poster_placeholder)
-                                .error(R.drawable.bg_poster_placeholder)
-                                .diskCacheStrategy(DiskCacheStrategy.NONE)
-                                .into(imageView)
+                        // 下载成功，检查 ImageView 是否仍然有效
+                        if (isValid()) {
+                            imageViewRef.get()?.post {
+                                if (isValid()) {
+                                    imageViewRef.get()?.let { view ->
+                                        Glide.with(imageViewContext)
+                                            .load(File(localPath))
+                                            .placeholder(R.drawable.bg_poster_placeholder)
+                                            .error(R.drawable.bg_poster_placeholder)
+                                            .diskCacheStrategy(DiskCacheStrategy.NONE)
+                                            .into(view)
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -244,9 +278,15 @@ object SmbImageLoader {
 
     /**
      * 预加载图片（用于列表滑动优化）
+     * @param lifecycleOwner 可选的生命周期所有者，用于协程管理
      */
     @JvmStatic
-    fun preloadPoster(@Suppress("UNUSED_PARAMETER") context: Context, posterPath: String?, serverId: String?) {
+    fun preloadPoster(
+        @Suppress("UNUSED_PARAMETER") context: Context,
+        posterPath: String?,
+        serverId: Long?,
+        lifecycleOwner: LifecycleOwner? = null
+    ) {
         if (posterPath == null || imageCache == null) return
 
         // 如果已缓存，跳过
@@ -254,18 +294,17 @@ object SmbImageLoader {
             return
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
+        // 优先使用生命周期绑定的作用域，否则使用全局作用域
+        val scope = lifecycleOwner?.lifecycleScope ?: imageLoadScope
+
+        scope.launch(Dispatchers.IO) {
             try {
                 val database = NASMovieApp.getInstance().database
                 val dao = database.smbConfigDao()
 
                 var config: SmbConfig? = null
-                if (!serverId.isNullOrEmpty()) {
-                    try {
-                        config = dao.getById(serverId.toLong())
-                    } catch (e: NumberFormatException) {
-                        // ignore
-                    }
+                if (serverId != null) {
+                    config = dao.getById(serverId)
                 }
 
                 if (config == null) {

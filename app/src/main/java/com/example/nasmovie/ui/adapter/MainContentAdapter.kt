@@ -9,7 +9,6 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.nasmovie.R
 import com.example.nasmovie.data.model.Movie
-import com.example.nasmovie.data.repository.MovieRepository
 import com.example.nasmovie.databinding.ItemMainSectionBinding
 import com.example.nasmovie.databinding.ItemMovieGridBinding
 import com.example.nasmovie.databinding.ItemMovieHorizontalScrollBinding
@@ -27,11 +26,6 @@ class MainContentAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         const val TYPE_GRID_HEADER = 1
         const val TYPE_GRID_ITEM = 2
         const val TYPE_HEADER = 3
-
-        private const val TYPE_SECTION_PRIVATE = 0
-        private const val TYPE_GRID_HEADER_PRIVATE = 1
-        private const val TYPE_GRID_ITEM_PRIVATE = 2
-        private const val TYPE_HEADER_PRIVATE = 3
     }
 
     private var sections = listOf<SectionData>()
@@ -42,9 +36,6 @@ class MainContentAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     
     private var headerViewRef: WeakReference<View>? = null
     private var currentSortText: String? = null
-    
-    // 保留以兼容旧代码
-    private var repository: MovieRepository? = null
 
     data class SectionData(val title: String, val movies: List<Movie>)
 
@@ -58,10 +49,6 @@ class MainContentAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     fun setOnSortClickListener(listener: () -> Unit) {
         this.sortClickListener = listener
-    }
-
-    fun setRepository(repository: MovieRepository) {
-        this.repository = repository
     }
 
     var headerView: View?
@@ -94,21 +81,21 @@ class MainContentAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         val adjustedPosition = position - offset
 
         return when {
-            position == 0 && hasHeader -> TYPE_HEADER_PRIVATE
-            adjustedPosition < sectionCount -> TYPE_SECTION_PRIVATE
-            adjustedPosition == sectionCount -> TYPE_GRID_HEADER_PRIVATE
-            else -> TYPE_GRID_ITEM_PRIVATE
+            position == 0 && hasHeader -> TYPE_HEADER
+            adjustedPosition < sectionCount -> TYPE_SECTION
+            adjustedPosition == sectionCount -> TYPE_GRID_HEADER
+            else -> TYPE_GRID_ITEM
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
-            TYPE_HEADER_PRIVATE -> HeaderViewHolder(headerView!!)
-            TYPE_SECTION_PRIVATE -> SectionViewHolder(
+            TYPE_HEADER -> HeaderViewHolder(headerView!!)
+            TYPE_SECTION -> SectionViewHolder(
                 ItemMainSectionBinding.inflate(inflater, parent, false)
             )
-            TYPE_GRID_HEADER_PRIVATE -> GridHeaderViewHolder(
+            TYPE_GRID_HEADER -> GridHeaderViewHolder(
                 ItemSectionHeaderBinding.inflate(inflater, parent, false)
             )
             else -> GridItemViewHolder(
