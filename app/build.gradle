@@ -91,6 +91,9 @@ android {
 dependencies {
     // SMB协议
     implementation 'com.hierynomus:smbj:0.13.0'
+    implementation('com.rapid7.client:dcerpc:0.12.0') {
+        exclude group: 'org.bouncycastle'
+    } // 用于 RPC 枚举共享
 
     // ExoPlayer (Media3) - 替代 VLC，体积更小
     implementation 'androidx.media3:media3-exoplayer:1.3.1'

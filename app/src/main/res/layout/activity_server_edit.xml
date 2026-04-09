@@ -71,33 +71,39 @@
                 android:textColorHint="@color/iosGray"
                 android:textSize="16sp" />
 
-            <!-- 共享文件夹名 -->
-            <EditText
-                android:id="@+id/et_server_share"
+            <!-- 电影路径 -->
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginBottom="14dp"
                 android:background="@drawable/bg_input_field"
-                android:hint="共享文件夹名"
-                android:inputType="text"
-                android:paddingHorizontal="16dp"
-                android:textColor="@android:color/white"
-                android:textColorHint="@color/iosGray"
-                android:textSize="16sp" />
+                android:paddingHorizontal="16dp">
 
-            <!-- 电影路径 (可选) -->
-            <EditText
-                android:id="@+id/et_movie_path"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginBottom="14dp"
-                android:background="@drawable/bg_input_field"
-                android:hint="电影路径（可选）"
-                android:inputType="text"
-                android:paddingHorizontal="16dp"
-                android:textColor="@android:color/white"
-                android:textColorHint="@color/iosGray"
-                android:textSize="16sp" />
+                <EditText
+                    android:id="@+id/et_movie_path"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_toStartOf="@id/btn_browse_path"
+                    android:background="@android:color/transparent"
+                    android:hint="共享名/路径（如：movies 或 movies/电影）"
+                    android:inputType="text"
+                    android:paddingVertical="0dp"
+                    android:textColor="@android:color/white"
+                    android:textColorHint="@color/iosGray"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/btn_browse_path"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:text="浏览"
+                    android:textColor="@color/iosBlue"
+                    android:textSize="16sp"
+                    android:background="?attr/selectableItemBackground"
+                    android:padding="8dp" />
+            </RelativeLayout>
 
             <!-- 用户名 (可选) -->
             <EditText
@@ -118,6 +124,7 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
+                android:layout_marginBottom="14dp"
                 android:background="@drawable/bg_input_field"
                 android:paddingHorizontal="16dp">
 

@@ -3,6 +3,7 @@ package com.example.nasmovie.ui
 import android.os.Bundle
 import android.text.method.HideReturnsTransformationMethod
 import android.text.method.PasswordTransformationMethod
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,6 +29,8 @@ import kotlinx.coroutines.withContext
 class ServerEditFragment : Fragment() {
 
     companion object {
+        private const val TAG = "ServerEditFragment"
+
         @JvmStatic
         fun newInstance(serverId: String?): ServerEditFragment {
             val fragment = ServerEditFragment()
@@ -83,6 +86,7 @@ class ServerEditFragment : Fragment() {
         binding.btnTogglePassword.setOnClickListener { togglePasswordVisibility() }
         binding.btnTest.setOnClickListener { testConnection() }
         binding.btnSave.setOnClickListener { saveServer() }
+        binding.btnBrowsePath.setOnClickListener { showPathBrowser() }
     }
 
     private fun togglePasswordVisibility() {
@@ -122,8 +126,19 @@ class ServerEditFragment : Fragment() {
                     binding.etServerName.setText(config.name)
                     binding.etServerHost.setText(config.host)
                     binding.etServerPort.setText(config.port.toString())
-                    binding.etServerShare.setText(config.shareName)
-                    binding.etMoviePath.setText(config.moviePath)
+
+                    // 合并共享名和路径显示
+                    val displayPath = if (config.shareName != null) {
+                        if (config.moviePath.isNullOrEmpty()) {
+                            config.shareName
+                        } else {
+                            "${config.shareName}/${config.moviePath}"
+                        }
+                    } else {
+                        ""
+                    }
+                    binding.etMoviePath.setText(displayPath)
+
                     binding.etUsername.setText(config.username)
                     binding.etPassword.setText(config.password)
                 }
@@ -189,8 +204,7 @@ class ServerEditFragment : Fragment() {
         val name = binding.etServerName.text.toString().trim()
         val host = binding.etServerHost.text.toString().trim()
         val portStr = binding.etServerPort.text.toString().trim()
-        val share = binding.etServerShare.text.toString().trim()
-        val path = binding.etMoviePath.text.toString().trim()
+        val fullPath = binding.etMoviePath.text.toString().trim()
         val username = binding.etUsername.text.toString().trim()
         val password = binding.etPassword.text.toString()
 
@@ -202,8 +216,8 @@ class ServerEditFragment : Fragment() {
             binding.etServerHost.error = "请输入 IP"
             return null
         }
-        if (share.isEmpty()) {
-            binding.etServerShare.error = "请输入共享名"
+        if (fullPath.isEmpty()) {
+            binding.etMoviePath.error = "请输入路径"
             return null
         }
 
@@ -214,15 +228,98 @@ class ServerEditFragment : Fragment() {
             return null
         }
 
+        // 解析路径为 shareName 和 moviePath
+        val (shareName, moviePath) = parsePath(fullPath)
+
         val config = SmbConfig()
         config.name = name
         config.host = host
         config.port = port
-        config.shareName = share
-        config.moviePath = path
+        config.shareName = shareName
+        config.moviePath = moviePath
         config.username = username
         config.password = password
 
         return config
+    }
+
+    private fun parsePath(fullPath: String): Pair<String?, String?> {
+        val parts = fullPath.split("/", limit = 2)
+        val result = when (parts.size) {
+            1 -> Pair(parts[0], null)
+            else -> Pair(parts[0], parts[1])
+        }
+        Log.i(TAG, "解析路径: fullPath=$fullPath, shareName=${result.first}, moviePath=${result.second}")
+        return result
+    }
+
+    private fun showPathBrowser() {
+        val host = binding.etServerHost.text.toString().trim()
+        val portStr = binding.etServerPort.text.toString().trim()
+        val username = binding.etUsername.text.toString().trim()
+        val password = binding.etPassword.text.toString()
+
+        Log.i(TAG, "打开路径浏览器: host=$host, port=$portStr, username=$username")
+
+        // 验证 IP 地址
+        if (host.isEmpty()) {
+            binding.etServerHost.error = "请先输入 IP 地址"
+            Toast.makeText(context, "请先输入 IP 地址", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // 验证端口
+        val port = try {
+            if (portStr.isEmpty()) 445 else portStr.toInt()
+        } catch (e: NumberFormatException) {
+            binding.etServerPort.error = "无效端口"
+            Toast.makeText(context, "无效端口", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // 验证账号密码
+        if (username.isEmpty() && password.isEmpty()) {
+            // 两者都为空，询问是否使用匿名登录
+            Toast.makeText(context, "请输入账号密码（或使用匿名登录）", Toast.LENGTH_SHORT).show()
+            binding.etUsername.error = "请输入账号"
+            binding.etPassword.error = "请输入密码"
+            binding.etUsername.requestFocus()
+            return
+        }
+
+        if (username.isNotEmpty() && password.isEmpty()) {
+            // 只输入了账号，没有密码
+            Toast.makeText(context, "请输入密码", Toast.LENGTH_SHORT).show()
+            binding.etPassword.error = "请输入密码"
+            binding.etPassword.requestFocus()
+            return
+        }
+
+        if (username.isEmpty() && password.isNotEmpty()) {
+            // 只输入了密码，没有账号
+            Toast.makeText(context, "请输入账号", Toast.LENGTH_SHORT).show()
+            binding.etUsername.error = "请输入账号"
+            binding.etUsername.requestFocus()
+            return
+        }
+
+        // 所有验证通过，弹出路径浏览器
+        val dialog = PathBrowserDialog(
+            requireContext(),
+            host,
+            port,
+            username.ifEmpty { null },
+            password.ifEmpty { null }
+        ) { shareName, moviePath ->
+            // 用户选择路径后的回调
+            val displayPath = if (moviePath.isNullOrEmpty()) {
+                shareName
+            } else {
+                "$shareName/$moviePath"
+            }
+            Log.i(TAG, "用户选择路径: shareName=$shareName, moviePath=$moviePath, displayPath=$displayPath")
+            binding.etMoviePath.setText(displayPath)
+        }
+        dialog.show()
     }
 }
