@@ -144,18 +144,8 @@ class HomeFragment : Fragment(),
         mainContentAdapter = MainContentAdapter()
         mainContentAdapter.setOnMovieClickListener(this)
 
-        // 根据屏幕宽度计算列数，平板设备卡片宽度 240dp
-        val metrics = resources.displayMetrics
-        val screenWidth = metrics.widthPixels
-        val maxWidth = (600 * metrics.density).toInt()
-        val desiredCardWidth = if (screenWidth > maxWidth) {
-            // 平板设备：卡片宽度 240dp
-            (240 * metrics.density).toInt()
-        } else {
-            // 手机设备：卡片宽度约 120dp
-            (120 * metrics.density).toInt()
-        }
-        val spanCount = maxOf(2, screenWidth / desiredCardWidth)
+        // 固定3列显示
+        val spanCount = 3
 
         val gridLayoutManager = GridLayoutManager(context, spanCount)
         gridLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
@@ -375,36 +365,7 @@ class HomeFragment : Fragment(),
     }
 
     private fun updateGridSpanCount() {
-        if (_binding == null || !::mainContentAdapter.isInitialized || !isAdded) return
-
-        val metrics = resources.displayMetrics
-        val screenWidth = metrics.widthPixels
-        val maxWidth = (600 * metrics.density).toInt()
-        val desiredCardWidth = if (screenWidth > maxWidth) {
-            (240 * metrics.density).toInt()
-        } else {
-            (120 * metrics.density).toInt()
-        }
-        val spanCount = maxOf(2, screenWidth / desiredCardWidth)
-
-        val layoutManager = binding.recyclerViewMain.layoutManager as? GridLayoutManager
-        if (layoutManager != null && layoutManager.spanCount != spanCount) {
-            // 重新创建 LayoutManager 并设置 spanSizeLookup
-            val newLayoutManager = GridLayoutManager(context, spanCount)
-            newLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-                override fun getSpanSize(position: Int): Int {
-                    val viewType = mainContentAdapter.getItemViewType(position)
-                    return if (viewType == MainContentAdapter.TYPE_HEADER ||
-                        viewType == MainContentAdapter.TYPE_SECTION ||
-                        viewType == MainContentAdapter.TYPE_GRID_HEADER) {
-                        spanCount
-                    } else {
-                        1
-                    }
-                }
-            }
-            binding.recyclerViewMain.layoutManager = newLayoutManager
-        }
+        // 列数固定为3列，无需动态更新
     }
 
     override fun onFeaturedClick(movie: Movie) {

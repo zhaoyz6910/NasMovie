@@ -50,11 +50,6 @@ class LockActivity : AppCompatActivity(), View.OnClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_lock)
 
-        // 禁止截图（增强安全性）
-        window.setFlags(
-            WindowManager.LayoutParams.FLAG_SECURE,
-            WindowManager.LayoutParams.FLAG_SECURE
-        )
 
         preferenceManager = PreferenceManager(this)
 

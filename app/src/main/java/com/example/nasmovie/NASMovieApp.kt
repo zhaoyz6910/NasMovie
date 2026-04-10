@@ -90,11 +90,6 @@ class NASMovieApp : Application(), Application.ActivityLifecycleCallbacks {
     }
 
     override fun onActivityResumed(activity: Activity) {
-        // 为所有 Activity 设置 FLAG_SECURE，禁止任务管理器显示内容和截图
-        activity.window.setFlags(
-            android.view.WindowManager.LayoutParams.FLAG_SECURE,
-            android.view.WindowManager.LayoutParams.FLAG_SECURE
-        )
     }
 
     override fun onActivityPaused(activity: Activity) {
