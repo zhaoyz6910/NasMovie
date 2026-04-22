@@ -1,5 +1,10 @@
 pluginManagement {
     repositories {
+        // 阿里云镜像 - 优先使用
+        maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        // 原始仓库作为备用
         google()
         mavenCentral()
         gradlePluginPortal()
@@ -8,6 +13,10 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        // 阿里云镜像 - 优先使用
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        // 原始仓库作为备用
         google()
         mavenCentral()
     }
