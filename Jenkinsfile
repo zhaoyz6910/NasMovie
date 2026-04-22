@@ -2,11 +2,14 @@ pipeline {
     agent any
 
     environment {
+        // Android SDK 配置
+        ANDROID_HOME = '/opt/android-sdk'
+        PATH = "${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tools:${ANDROID_HOME}/build-tools/34.0.0:${env.PATH}"
+
         // 蒾公英配置
         PGYER_API_KEY = credentials('pgyer-api-key')
 
         // 签名配置 - 使用 Secret File 凭据
-        // Jenkins 会自动将文件复制到临时目录并提供路径
         KEYSTORE_FILE = credentials('nasmovie-keystore')
         STORE_PASSWORD = credentials('nasmovie-store-password')
         KEY_ALIAS = 'nasmovie'
